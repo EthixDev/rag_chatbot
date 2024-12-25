@@ -6,7 +6,7 @@ def read_docx(file_path):
     text = ""
     
     for para in doc.paragraphs:
-        text += para.text
+        text += para.text 
     
     return text
 
@@ -16,7 +16,8 @@ def chunk_text(doc, chunk_size=500, chunk_overlap=5):
     return chunks
 
 if __name__ == "__main__":
-    file_path = "C:/Users/haileyesus/Desktop/Ethix/rag_chatbot/docs/Edge.docx"
+
+    file_path = "/home/meron/Documents/ethix/codes/rag_chatbot/Edge.docx"
     doc_text = read_docx(file_path)
-    chunk_doc = chunk_text(doc_text)
+    doc_text= chunk_text(doc_text)
     print(doc_text)
