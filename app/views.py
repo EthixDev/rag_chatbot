@@ -6,9 +6,6 @@ from app.models import Conversation, Document, TextChunk, Topic
 import google.generativeai as genai
 from django.contrib.auth.decorators import login_required
 import os
-import sys
-
-sys.path.append("/home/meron/Documents/ethix/codes/rag_chatbot")
 
 # Load environment variables
 load_dotenv()
@@ -34,11 +31,10 @@ def generate_response_with_gemini(user_question, relevant_text_chunk, conversati
 
     try:
         # Use Gemini to generate a response
-        response = genai.chat(
-            model="gemini-1.5-flash-002",  # Ensure this matches the intended model
-            messages=[{"content": prompt, "author": "user"}]
-        )
-        return response["candidates"][0]["content"]  # Return the first response candidate
+        model = genai.GenerativeModel('models/gemini-1.5-flash')
+        response = model.generate_content(prompt)
+
+        return response.text
     except Exception as e:
         raise ValueError(f"Error generating response with Gemini: {e}")
 
@@ -58,7 +54,7 @@ def process_question(request, id=None):
         user_question = request.POST.get("input_text")
         selected_document_name = request.POST.get("document", "")
         selected_document = Document.objects.filter(
-            pdf_file__icontains=selected_document_name
+            file__icontains=selected_document_name
         ).first()
 
         if selected_document:
@@ -91,9 +87,9 @@ def process_question(request, id=None):
             history = []
             if conversations is not None:
                 for conv in conversations:
-                    answer = f"Question: {conv.question}"
-                    question = f"Answer: {conv.answer}"
-                    history.append(f"{answer}, {question}")
+                    formatted_question = f"Question: {conv.question}"
+                    formatted_answer = f"Answer: {conv.answer}"
+                    history.append(f"{formatted_question}, {formatted_answer}")
             else:
                 history = None
 
