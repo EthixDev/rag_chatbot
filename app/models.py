@@ -25,7 +25,7 @@ class Document(models.Model):
                 embeds = embed_text(chunks)
                 
                 for chunk, embed in zip(chunks, embeds):
-                    TextChunk.objects.create(document=self, text=chunk, embed=embed)
+                    TextChunk.objects.create(document=self, chunk=chunk, embedding=embed)
             except Exception as e:
                 logger.error(f"Error processing document: {e}")
         else:
