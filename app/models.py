@@ -1,6 +1,6 @@
 from django.db import models
 from pgvector.django import VectorField
-from RAG.read_chunking import read_docx, chunk_text
+from RAG.read_chunking import read_pdf, chunk_text
 from RAG.embedding_gen import embed_text
 import logging
 
@@ -20,7 +20,7 @@ class Document(models.Model):
         
         if self.file:
             try:
-                text = read_docx(self.file.path)
+                text = read_pdf(self.file.path)
                 chunks = chunk_text(text)
                 
                 # Generate embeddings for the chunks

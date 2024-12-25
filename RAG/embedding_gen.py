@@ -2,7 +2,7 @@ import google.generativeai as genai
 import os
 
 from dotenv import load_dotenv
-from RAG.read_chunking import chunk_text,read_docx
+from RAG.read_chunking import chunk_text,read_pdf
 
 load_dotenv()
 
@@ -19,7 +19,7 @@ def embed_text(chunk):
 if __name__ == "__main__":
     doc_path = "/path/to/document"
     
-    doc_text = read_docx(doc_path)
+    doc_text = read_pdf(doc_path)
     chunks = chunk_text(doc_text,chunk_size=1500, chunk_overlap=5)
     embeddings = embed_text(chunks)
     print(embeddings)
