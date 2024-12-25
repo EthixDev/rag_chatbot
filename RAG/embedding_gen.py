@@ -1,16 +1,24 @@
-from langchain.embeddings.openai import OpenAIEmbeddings
+# from langchain_community.embeddings import OpenAIEmbeddings
 from dotenv import load_dotenv
-from .read_chunking import read_docx, chunk_text
+from RAG.read_chunking import chunk_text,read_docx
+from sentence_transformers import SentenceTransformer
+# 
 
 load_dotenv()
 
+# def embed_text(chunks):
+#     embedding_model = OpenAIEmbeddings(model="text-embedding-ada-002")
+#     embeds = embedding_model.embed_documents(chunks)
+#     return embeds
+
+
 def embed_text(chunks):
-    embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
-    embeds = embedding_model.embed_documents(chunks)
-    return embeds
+    model = SentenceTransformer('all-MiniLM-L6-v2')
+    embeddings = model.encode(chunks, convert_to_tensor=True)
+    return embeddings
 
 if __name__ == "__main__":
-    doc_path = "C:/Users/haileyesus/Desktop/Ethix/rag_chatbot/docs/Edge.docx"
+    doc_path = "/home/meron/Documents/ethix/codes/rag_chatbot/Edge.docx"
     
     doc_text = read_docx(doc_path)
     chunks = chunk_text(doc_text,chunk_size=1500, chunk_overlap=5)
