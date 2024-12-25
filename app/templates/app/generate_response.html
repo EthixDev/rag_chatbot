@@ -1,0 +1,93 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EthixAI</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'app/styles.css' %}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <h2>Topics</h2>
+            <a href="{% url 'generate_response'%}">chat</a>
+            <ul class="navbar-nav">
+                {% for topic in topics %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'topic_view' id=topic.id %}">
+                            {{ topic.title }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="chat-window">
+            <h2>EthixAI Chatbot</h2>
+            <form method="post" id = "myForm" action="{{ request.path }}">
+                {% csrf_token %}
+                <!-- Document selection -->
+                <label for="document">Select Document:</label>
+                <select name="document" id="document">
+                    <option value="">All Documents</option>
+                    {% for document in documents %}
+                        <option value="{{ document.file.name }}" {% if document.file.name == selected_document %}selected{% endif %}>
+                            {{ document.file.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+
+                <!-- Conversation history -->
+                <div class="conversation-history">
+                    {% for conv in conversations %}
+                        <div class="question">
+                            {{ conv.question }}
+                        </div>
+                        <div class="answer">
+                            {{ conv.answer }}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Input text -->
+                <textarea id="input_text" name="input_text" cols="40" rows="5" placeholder="Enter your text here"></textarea><br>
+                <input id="submitButton" type="submit" value="Generate">
+            </form>
+        </div>
+    </div>
+
+    <!-- Display current topic (optional) -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <div class="container">
+            <ul class="navbar-nav">
+                <li class="nav-item">{{ topic.title }}</li>
+            </ul>
+        </div>
+    </nav>
+
+    <script>
+        const textarea = document.getElementById('input_text');
+        const submitButton = document.getElementById('submitButton');
+    
+        textarea.addEventListener('keydown', function(event) {
+            if (event.keyCode === 13) {
+                event.preventDefault();  // Prevent default Enter behavior (e.g., new line)
+                
+                // Change the background color of the submit button
+                submitButton.style.backgroundColor = '#45a049';
+    
+                // Optionally, submit the form programmatically
+                document.getElementById('myForm').submit();
+            }
+        });
+    
+        // Reset button color when textarea loses focus
+        textarea.addEventListener('blur', function() {
+            submitButton.style.backgroundColor = '';  // Reset to default or empty for CSS-based color
+        });
+    </script>
+    
+</body>
+</html>
