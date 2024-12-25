@@ -41,15 +41,6 @@ class TextChunk(models.Model):
     def __str__(self):
         return f"Chunk for Document ID {self.document.id}"  
     
-class Query(models.Model):
-    query_text = models.TextField()
-    response = models.TextField(blank=True)
-    related_chunks = models.ManyToManyField(TextChunk, black=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    
-    def __str__(self):
-        return f"Query: {self.query_text[:50]}..."
-    
 class Topic(models.Model):
     title = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
