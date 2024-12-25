@@ -10,7 +10,7 @@ def read_docx(file_path):
     
     return text
 
-def chunk_text(doc, chunk_size=2000):
+def chunk_text(doc, chunk_size=2000, chunk_overlap=5):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)
     chunks = text_splitter.split_text(doc)
     return chunks
