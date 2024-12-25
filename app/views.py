@@ -1,43 +1,46 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from RAG.embed_text import embed_text
+from RAG.embedding_gen import embed_text
 from RAG.similarity import cosine_similarity
 from dotenv import load_dotenv
 from app.models import Conversation, Document, TextChunk, Topic
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage
+import google.generativeai as genai
 from django.contrib.auth.decorators import login_required
 import os
+import sys
 
+sys.path.append("/home/meron/Documents/ethix/codes/rag_chatbot")
 
+# Load environment variables
 load_dotenv()
 
-
-api_key = os.getenv("OPENAI_API_KEY")
+api_key = os.environ.get("GEMINI_API_KEY")
 if not api_key:
-    raise EnvironmentError("OPENAI_API_KEY is not set. Please set the environment variable.")
+    raise EnvironmentError("GEMINI_API_KEY is not set. Please set the environment variable.")
 
-chat = ChatOpenAI(model="gpt-3.5-turbo-1106", temperature=0.2, openai_api_key=api_key)
-
-
-# chat = ChatOpenAI(model="gpt-3.5-turbo-1106", temperature=0.2)
+# Configure the API
+genai.configure(api_key=api_key)
 
 
-def generate_response_with_gpt_turbo(user_question, relevant_text_chunk, conversations):
+# Generate response using Gemini
+def generate_response_with_gemini(user_question, relevant_text_chunk, conversations):
     prompt = (
-        f"AI Language Model Assistant, based on the provided information and conversations:\n"
-        f"User Question: '+ \n {conversations} \n {user_question}'\n"
-        f"Relevant Text Chunk: '{relevant_text_chunk}'\n"
-        f"Please provide a short, concise and fact-based answer to the user's question:\n"
+        f"AI Assistant: Based on the provided information and previous conversations:\n"
+        f"User Question: {user_question}\n"
+        f"Relevant Text Chunk: {relevant_text_chunk}\n"
+        f"Conversation History: {conversations}\n"
+        f"Please provide a short, concise, and fact-based answer to the user's question.\n"
         f"Answer: "
     )
 
-    # Implement the GPT-3.5 Turbo API call to generate a response
-    response = chat.invoke(
-        [
-            HumanMessage(content=prompt),
-        ]
-    )
-    return response
+    try:
+        # Use Gemini to generate a response
+        response = genai.chat(
+            model="gemini-1.5-flash-002",  # Ensure this matches the intended model
+            messages=[{"content": prompt, "author": "user"}]
+        )
+        return response["candidates"][0]["content"]  # Return the first response candidate
+    except Exception as e:
+        raise ValueError(f"Error generating response with Gemini: {e}")
 
 
 def process_question(request, id=None):
@@ -59,12 +62,14 @@ def process_question(request, id=None):
         ).first()
 
         if selected_document:
+            # Generate embedding for the user question using Gemini
             embeded_question = embed_text([user_question])[0]
             best_text_chunks = []
             chunks = TextChunk.objects.filter(document=selected_document)
 
             for text_chunk in chunks:
-                similarity = cosine_similarity(embeded_question, text_chunk.embed)
+                # Calculate similarity between question embedding and text chunks
+                similarity = cosine_similarity(embeded_question, text_chunk.embedding)
 
                 if len(best_text_chunks) < 3:
                     best_text_chunks.append((similarity, text_chunk.chunk))
@@ -78,34 +83,35 @@ def process_question(request, id=None):
                             text_chunk.chunk,
                         )
 
+            # Combine best matching text chunks
             best_text_chunks = [chunk for _, chunk in best_text_chunks]
             total_text = "".join(best_text_chunks)
 
+            # Prepare conversation history
             history = []
             if conversations is not None:
                 for conv in conversations:
-                    answer = 'quetion: ' + conv.answer
-                    question ='answer: ' + conv.question
-                    add_two = answer + ', ' + question
-                    history.append(add_two)
+                    answer = f"Question: {conv.question}"
+                    question = f"Answer: {conv.answer}"
+                    history.append(f"{answer}, {question}")
             else:
-                None
+                history = None
 
-            response = generate_response_with_gpt_turbo(
-                user_question, total_text, conversations=history
-            )
+            # Generate a response using Gemini
+            try:
+                response = generate_response_with_gemini(
+                    user_question, total_text, conversations=history
+                )
+            except ValueError as e:
+                response = str(e)
 
             if not topic:
                 topic = Topic.objects.create(title=user_question)
             Conversation.objects.create(
-                topic=topic, question=user_question, answer=response.content
-            )   
+                topic=topic, question=user_question, answer=response
+            )
 
             return redirect("topic_view", topic.id if topic else None)
-
-    documents = Document.objects.all()
-    topics = Topic.objects.all()
-    conversations = Conversation.objects.filter(topic_id=id) if id else None
 
     return render(
         request,
