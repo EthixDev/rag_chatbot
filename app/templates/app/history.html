@@ -1,0 +1,51 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EthixAI</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'app/styles.css' %}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <h2>Topics</h2>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+            <ul>
+                <a href="{% url 'topic_view' id=topic.id %}"><li>{{ topic.title }}</li></a>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <div class="chat-window">
+            <h2>EthixAI chatbot</h2>
+
+            <form method="post" action="{% url 'generate_response' %}">
+                {% csrf_token %}
+                <!--  document selection -->
+                <label for="document">Select Document:</label>
+                <select name="document" id="document">
+                    <option value="">All Documents</option>
+                    {% for document in documents %}
+                        <option value="{{ document.pdf_file.name }}" {% if document.pdf_file.name == selected_document %}selected{% endif %}>
+                            {{ document.pdf_file.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <div>
+                    {% for conv in conversations %}
+                    <div class="question">
+                    {{ conv.question }}
+                    </div>
+                    <div class="answer">
+                    {{ conv.answer }}
+                   </div>
+                    {% endfor %}
+                </div>
+                <!-- input text -->
+                <br>
+                <textarea id="input_text" name="input_text" cols="40" rows="5" placeholder="Enter your text here"></textarea><br>
+                <input type="submit" value="Generate">
+            </form>
+        </div>
+    </div>
+</html>
