@@ -1,20 +1,19 @@
-# from langchain_community.embeddings import OpenAIEmbeddings
+import google.generativeai as genai
+import os
+
 from dotenv import load_dotenv
 from RAG.read_chunking import chunk_text,read_docx
-from sentence_transformers import SentenceTransformer
-# 
 
 load_dotenv()
 
-# def embed_text(chunks):
-#     embedding_model = OpenAIEmbeddings(model="text-embedding-ada-002")
-#     embeds = embedding_model.embed_documents(chunks)
-#     return embeds
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
 
 
-def embed_text(chunks):
-    model = SentenceTransformer('all-MiniLM-L6-v2')
-    embeddings = model.encode(chunks, convert_to_tensor=True)
+def embed_text(chunk):
+    embeddings = genai.embed_content(
+        model = 'models/text-embedding-004',
+        content=chunk,
+    )
     return embeddings
 
 if __name__ == "__main__":
