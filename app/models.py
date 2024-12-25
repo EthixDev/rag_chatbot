@@ -22,19 +22,23 @@ class Document(models.Model):
             try:
                 text = read_docx(self.file.path)
                 chunks = chunk_text(text)
-                embeds = embed_text(chunks)
                 
-                for chunk, embed in zip(chunks, embeds):
+                # Generate embeddings for the chunks
+                for chunk in chunks:
+                    embed = embed_text(chunk)
+                    if not isinstance(embed, list) or not all(isinstance(val, float) for val in embed):
+                        raise ValueError("Embedding is not a valid list of floats")
+                    
+                    # Save the chunk and its embedding
                     TextChunk.objects.create(document=self, chunk=chunk, embedding=embed)
             except Exception as e:
                 logger.error(f"Error processing document: {e}")
-        else:
-            logger.error("No document file to process.")
+                raise
 
 class TextChunk(models.Model):
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='text_chunks')       
     chunk = models.TextField()
-    embedding = VectorField(dimensions=768) 
+    embedding = VectorField() 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -48,8 +52,8 @@ class Topic(models.Model):
     
 class Conversation(models.Model):
     topic = models.ForeignKey(Topic, on_delete=models.CASCADE, null = True)
-    question = models.CharField(max_length=100)
-    answer = models.CharField(max_length=100)
+    question = models.CharField(max_length=500)
+    answer = models.CharField(max_length=2000)
     created_at = models.DateTimeField(auto_now_add=True)
     
 
