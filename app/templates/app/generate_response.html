@@ -1,0 +1,55 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EthixAI Chatbot</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'app/styles.css' %}">
+</head>
+<body>
+    <div class="main-container">
+        <!-- Left Sidebar for Topics -->
+        <div class="sidebar">
+            <h2>Topics</h2>
+            <ul class="topic-list">
+                {% for topic in topics %}
+                    <li>
+                        <a href="{% url 'topic_view' id=topic.id %}">{{ topic.title }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Main Chat Section -->
+        <div class="chat-container">
+            <div class="chat-window">
+                <h2>EthixAI Chatbot</h2>
+
+                <!-- Conversation History -->
+                <div class="conversation-history">
+                    {% for conv in conversations %}
+                        <div class="chat-message user">{{ conv.question }}</div>
+                        <div class="chat-message ai">{{ conv.answer }}</div>
+                    {% endfor %}
+                </div>
+
+                <!-- Input Section -->
+                <form method="post" id="myForm" action="{{ request.path }}">
+                    {% csrf_token %}
+                    <label for="document">Select Document:</label>
+                    <select name="document" id="document">
+                        <option value="">All Documents</option>
+                        {% for document in documents %}
+                            <option value="{{ document.file.name }}" {% if document.file.name == selected_document %}selected{% endif %}>
+                                {{ document.file.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <textarea id="input_text" name="input_text" placeholder="Type your message..."></textarea>
+                    <button type="submit">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

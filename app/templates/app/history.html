@@ -1,0 +1,42 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>EthixAI Chatbot</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'app/styles.css' %}">
+</head>
+<body>
+    <div class="main-container">
+        <!-- Left Sidebar for History -->
+        <div class="sidebar">
+            <h2>History</h2>
+            <ul class="topic-list">
+                {% for topic in topics %}
+                    <li>
+                        <a href="{% url 'topic_view' id=topic.id %}">{{ topic.title }}</a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Main Chat Section -->
+        <div class="chat-container">
+            <div class="chat-window">
+                <h2>EthixAI Chatbot</h2>
+                <div class="conversation-history">
+                    {% for conv in conversations %}
+                        <div class="chat-message user">{{ conv.question }}</div>
+                        <div class="chat-message ai">{{ conv.answer }}</div>
+                    {% endfor %}
+                </div>
+                <form method="post" action="{% url 'generate_response' %}">
+                    {% csrf_token %}
+                    <textarea id="input_text" name="input_text" placeholder="Type your message..."></textarea>
+                    <button type="submit">Send</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

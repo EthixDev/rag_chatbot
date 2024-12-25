@@ -1,19 +1,14 @@
 from django.contrib import admin
 
-# Register your models here.
-
-from django.contrib import admin
-
-
 from .models import Document, TextChunk, Conversation, Topic
 
 class DocumentAdmin(admin.ModelAdmin):
-    list_display = ('pdf_file', 'created_at', 'updated_at')
-    search_fields = ('pdf_file',)
+    list_display = ('file', 'created_at', 'updated_at')
+    search_fields = ('file',)
     readonly_fields = ('created_at', 'updated_at')
 
 class TextChunkAdmin(admin.ModelAdmin):
-    list_display = ('chunk', 'embed', 'updated_at')
+    list_display = ('chunk', 'updated_at')
   
 
 class ConversationAdmin(admin.ModelAdmin):

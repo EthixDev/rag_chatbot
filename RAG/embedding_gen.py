@@ -1,18 +1,25 @@
-from langchain.embeddings.openai import OpenAIEmbeddings
+import google.generativeai as genai
+import os
+
 from dotenv import load_dotenv
-from .read_chunking import read_docx, chunk_text
+from RAG.read_chunking import chunk_text,read_pdf
 
 load_dotenv()
 
-def embed_text(chunks):
-    embedding_model = OpenAIEmbeddings(model="text-embedding-3-small")
-    embeds = embedding_model.embed_documents(chunks)
-    return embeds
+genai.configure(api_key=os.environ["GEMINI_API_KEY"])
+
+
+def embed_text(chunk):
+    embeddings = genai.embed_content(
+        model = 'models/text-embedding-004',
+        content=chunk,
+    )
+    return embeddings["embedding"]  
 
 if __name__ == "__main__":
-    doc_path = "C:/Users/haileyesus/Desktop/Ethix/rag_chatbot/docs/Edge.docx"
+    doc_path = "/path/to/document"
     
-    doc_text = read_docx(doc_path)
+    doc_text = read_pdf(doc_path)
     chunks = chunk_text(doc_text,chunk_size=1500, chunk_overlap=5)
     embeddings = embed_text(chunks)
     print(embeddings)
