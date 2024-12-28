@@ -122,7 +122,7 @@ def process_question(request, id=None):
     )
 
 
-@login_required
+# @login_required
 def generate_response(request):
     return process_question(request)
 
