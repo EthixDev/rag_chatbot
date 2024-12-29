@@ -1,6 +1,4 @@
-import numpy as np
-from numpy.linalg import norm
-
+from pgvector.django import CosineDistance
 def cosine_similarity(embedding1, embedding2):
     
-    return np.dot(embedding1, embedding2) / (norm(embedding1) * norm(embedding2))
+    return CosineDistance(embedding1, embedding2)
