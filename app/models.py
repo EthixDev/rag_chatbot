@@ -1,5 +1,6 @@
 from django.db import models
 from pgvector.django import VectorField
+from pgvector.django import HnswIndex
 from RAG.read_chunking import read_pdf, chunk_text
 from RAG.embedding_gen import embed_text
 import logging
@@ -44,6 +45,17 @@ class TextChunk(models.Model):
     
     def __str__(self):
         return f"Chunk for Document ID {self.document.id}"  
+    
+    class Meta:
+        indexes =  [
+            HnswIndex(
+                name='embedding_idx',
+                fields=['embedding'],
+                m=16,
+                ef_construction=64,
+                opclasses=["vector_cosine_ops"],
+            )
+        ]
     
 class Topic(models.Model):
     title = models.CharField(max_length=255)
