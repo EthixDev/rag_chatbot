@@ -12,7 +12,9 @@ load_dotenv()
 
 api_key = os.environ.get("GEMINI_API_KEY")
 if not api_key:
-    raise EnvironmentError("GEMINI_API_KEY is not set. Please set the environment variable.")
+    raise EnvironmentError(
+        "GEMINI_API_KEY is not set. Please set the environment variable."
+    )
 
 # Configure the API
 genai.configure(api_key=api_key)
@@ -31,7 +33,7 @@ def generate_response_with_gemini(user_question, relevant_text_chunk, conversati
 
     try:
         # Use Gemini to generate a response
-        model = genai.GenerativeModel('models/gemini-1.5-flash')
+        model = genai.GenerativeModel("models/gemini-1.5-flash")
         response = model.generate_content(prompt)
 
         return response.text
@@ -120,7 +122,7 @@ def process_question(request, id=None):
     )
 
 
-@login_required
+# @login_required
 def generate_response(request):
     return process_question(request)
 
