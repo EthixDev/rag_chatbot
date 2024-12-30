@@ -10,6 +10,9 @@ media
 *.bak 
 *.pdf
 *.docx
+*.css 
+*.js
+*.svg
 
 # If you are using PyCharm # 
 # User-specific stuff
@@ -80,7 +83,7 @@ htmlcov/
 .tox/ 
 .coverage 
 .coverage.* 
-.cache 
+.cache*
 .pytest_cache/ 
 nosetests.xml 
 coverage.xml 
