@@ -1,11 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from RAG.embedding_gen import embed_text
+from RAG.read_chunking import chunk_text
 from RAG.similarity import cosine_similarity
 from dotenv import load_dotenv
 from app.models import Conversation, Document, TextChunk, Topic
 import google.generativeai as genai
-from django.contrib.auth.decorators import login_required
 import os
+from pgvector.django import CosineDistance
 
 # Load environment variables
 load_dotenv()
@@ -129,3 +130,30 @@ def generate_response(request):
 
 def topic_view(request, id):
     return process_question(request, id)
+
+def index(request):
+    context = {}
+    if request.method == "POST":
+        input_text = request.POST.get("input_text")
+        if input_text:
+            try:
+                # Process the input text
+                text_chunks = chunk_text(input_text)
+                embeddings = [embed_text(chunk) for chunk in text_chunks]
+
+                # Find the most similar chunk for the first embedding
+                similar_document = None
+                if embeddings:
+                    embedding = embeddings[0]
+                    similar_document = TextChunk.objects.order_by(
+                        CosineDistance('embedding', embedding)).first()
+                
+                context = {
+                    'input_text': input_text,
+                    'text_chunks': text_chunks,
+                    'most_similar': similar_document.chunk if similar_document else "No similar chunk found.",
+                }
+            except Exception as e:
+                context = {'error': str(e)}
+
+    return render(request, 'app/index.html', context)
