@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Similarity Finder</title>
+</head>
+<body>
+    <h1>Find Similar Text Chunk</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <textarea name="input_text" rows="5" cols="60" placeholder="Enter text here">{{ input_text }}</textarea>
+        <br><br>
+        <button type="submit">Find Similar Chunk</button>
+    </form>
+
+    {% if error %}
+        <p style="color: red;">Error: {{ error }}</p>
+    {% endif %}
+
+    {% if input_text %}
+        <h2>Input Text:</h2>
+        <p>{{ input_text }}</p>
+    {% endif %}
+
+    {% if most_similar %}
+        <h2>Most Similar Chunk:</h2>
+        <p>{{ most_similar }}</p>
+    {% endif %}
+</body>
+</html>
