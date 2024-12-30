@@ -54,8 +54,9 @@ def process_question(request, id=None):
             embeded_question = embed_text([user_question])[0]
 
             # Query the top 3 similar text chunks across all documents using pgvector's CosineDistance
+            similarity=CosineDistance("embedding", embeded_question)
             similar_chunks = (
-                TextChunk.objects.annotate(similarity=CosineDistance("embedding", embeded_question))
+                TextChunk.objects.annotate(similarity)
                 .order_by("similarity")[:3]
             )
 
