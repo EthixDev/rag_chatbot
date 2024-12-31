@@ -7,7 +7,7 @@ services:
       dockerfile: Dockerfile
     image: web_image
     ports:
-      - "9000:8080"  # Exposes port 8080 of the container to 9000 on the host
+      - "8080:8080"  # Exposes port 8080 of the container to 9000 on the host
     volumes:
       - .:/app  # Mounts the current directory to /app in the container
     env_file: 
