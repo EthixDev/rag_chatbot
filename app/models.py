@@ -39,7 +39,7 @@ class Document(models.Model):
 class TextChunk(models.Model):
     document = models.ForeignKey(Document, on_delete=models.CASCADE, related_name='text_chunks')       
     chunk = models.TextField()
-    embedding = VectorField() 
+    embedding = VectorField(dimensions=768) 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

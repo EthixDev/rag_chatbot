@@ -7,12 +7,19 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('app', '0002_initial'),
+        ('app', '0004_alter_textchunk_embedding'),
     ]
 
     operations = [
         migrations.AddIndex(
             model_name='textchunk',
-            index=pgvector.django.indexes.HnswIndex(ef_construction=64, fields=['embedding'], m=16, name='embedding_idx', opclasses=['vector_cosine_ops']),
+            index=pgvector.django.indexes.HnswIndex(
+                ef_construction=64,
+                fields=['embedding'],
+                m=16,
+                name='embedding_idx',
+                opclasses=['vector_cosine_ops']
+            ),
         ),
     ]
+
