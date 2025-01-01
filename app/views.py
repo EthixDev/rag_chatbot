@@ -6,6 +6,12 @@ from pgvector.django import CosineDistance
 from dotenv import load_dotenv
 import google.generativeai as genai
 import os
+from rest_framework.views import APIView
+from .models import Document
+from rest_framework.response import Response
+from rest_framework import status
+from .serializers import DocumentSerializer
+
 
 load_dotenv()
 
@@ -16,7 +22,6 @@ if not api_key:
     )
 
 genai.configure(api_key=api_key)
-
 
 def generate_response_with_gemini(user_question, relevant_text_chunks, conversations):
     prompt = (
@@ -132,3 +137,20 @@ def index(request):
                 context = {'error': str(e)}
 
     return render(request, 'app/index.html', context)
+
+
+class DocumentUpload(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = DocumentSerializer(data=request.data)
+        if serializer.is_valid():
+            document = serializer.save()  # Calls the Document model's save() method
+            return Response({
+                'success': True,
+                'message': 'Document uploaded successfully!',
+                'document': DocumentSerializer(document).data
+            }, status=status.HTTP_201_CREATED)
+        return Response({
+            'success': False,
+            'errors': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+    

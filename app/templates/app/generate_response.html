@@ -50,6 +50,59 @@
                 </form>
             </div>
         </div>
+
+        <!-- Document Upload Section -->
+        <div class="upload-section">
+            <h3>Upload a New Document</h3>
+            <form id="uploadForm">
+                <label for="file">Upload Document:</label>
+                <input type="file" id="file" name="file" required>
+                <label for="title">Document Title:</label>
+                <input type="text" id="title" name="title" required>
+                <button type="submit">Upload</button>
+            </form>
+        </div>
     </div>
+
+    <script>
+        document.querySelector('#uploadForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const fileInput = document.querySelector('#file');
+            const titleInput = document.querySelector('#title');
+
+            if (!fileInput.files.length || !titleInput.value.trim()) {
+                alert('Please fill in all fields.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('title', titleInput.value);
+
+            try {
+                const response = await fetch("{% url 'api_upload_document' %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}', // Ensure CSRF token is included
+                    },
+                    body: formData,
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(result.message);
+                    // Optionally refresh the page or update the document list dynamically
+                    location.reload();
+                } else {
+                    alert(`Error: ${result.errors}`);
+                }
+            } catch (error) {
+                alert('An error occurred while uploading the document.');
+                console.error(error);
+            }
+        });
+    </script>
 </body>
 </html>

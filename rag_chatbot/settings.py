@@ -43,7 +43,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'app',
-    "pgvector.django",
+    'pgvector.django',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
