@@ -1,16 +1,14 @@
-# Setting Up pgvector for PostgreSQL
+# clone the repository
 
-This repository uses `pgvector`, a PostgreSQL extension for vector similarity search. Below are the steps to manually install and configure `pgvector` on your system.
+```sh
+git clone https://github.com/EthixDev/rag_chatbot.git
+cd rag_chatbot
+```
 
----
+## run the following command
+```sh
+ docker compose up --build
+```
+## run 
 
-## Installation Procedure
-
-Follow these steps to set up `pgvector`:
-
-### 1. Install Prerequisites
-Ensure you have the necessary tools to build and install PostgreSQL extensions:
-
-```bash
-sudo apt update
-sudo apt install git make gcc postgresql-server-dev-14
+run on your localhost
