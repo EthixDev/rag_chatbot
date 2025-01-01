@@ -4,6 +4,87 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Text Similarity Finder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f9;
+            color: #333;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+            color: #4a90e2;
+        }
+
+        form {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 15px;
+            background: #b4ced4;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        textarea {
+            width: 100%;
+            font-size: 16px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px 20px;
+            font-size: 16px;
+            color: #fff;
+            background-color: #4a90e2;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #357ab8;
+        }
+
+        p {
+            margin: 10px 0;
+        }
+
+        .error {
+            color: red;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .output-section {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #c2e4e6;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .output-section h2 {
+            color: #4a90e2;
+            margin-bottom: 10px;
+        }
+
+        .output-section p {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+    </style>
 </head>
 <body>
     <h1>Find Similar Text Chunk</h1>
@@ -15,17 +96,21 @@
     </form>
 
     {% if error %}
-        <p style="color: red;">Error: {{ error }}</p>
+        <p class="error">Error: {{ error }}</p>
     {% endif %}
 
     {% if input_text %}
-        <h2>Input Text:</h2>
-        <p>{{ input_text }}</p>
+        <div class="output-section">
+            <h2>Input Text:</h2>
+            <p>{{ input_text }}</p>
+        </div>
     {% endif %}
 
     {% if most_similar %}
-        <h2>Most Similar Chunk:</h2>
-        <p>{{ most_similar }}</p>
+        <div class="output-section">
+            <h2>Most Similar Chunk:</h2>
+            <p>{{ most_similar }}</p>
+        </div>
     {% endif %}
 </body>
 </html>

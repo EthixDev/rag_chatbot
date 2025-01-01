@@ -3,14 +3,16 @@ from RAG.embedding_gen import embed_text
 from RAG.embedding_gen import chunk_text
 from app.models import Conversation, TextChunk, Topic
 from pgvector.django import CosineDistance
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
 import google.generativeai as genai
 import os
 from rest_framework.views import APIView
-from .models import Document
 from rest_framework.response import Response
 from rest_framework import status
 from .serializers import DocumentSerializer
+import json 
 
 
 load_dotenv()
@@ -154,3 +156,16 @@ class DocumentUpload(APIView):
             'errors': serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
     
+
+@csrf_exempt
+def delete_topic(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            topic_id = data.get('id')
+            topic = get_object_or_404(Topic, id=topic_id)
+            topic.delete()
+            return JsonResponse({'message': 'Topic deleted successfully'})
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=400)
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
