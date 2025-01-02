@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from RAG.embedding_gen import embed_text
 from RAG.embedding_gen import chunk_text
-from app.models import Conversation, TextChunk, Topic
+from app.models import Document, Conversation, TextChunk, Topic
 from pgvector.django import CosineDistance
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -43,7 +43,6 @@ def generate_response_with_gemini(user_question, relevant_text_chunks, conversat
     except Exception as e:
         raise ValueError(f"Error generating response with Gemini: {e}")
 
-
 def process_question(request, id=None):
     # Fetch topic and conversation history if available
     topic = get_object_or_404(Topic, id=id) if id else None
@@ -52,20 +51,45 @@ def process_question(request, id=None):
     )
 
     topics = Topic.objects.all()
+    documents = Document.objects.all()  # Fetch all documents
+
+    selected_document = None
 
     if request.method == "POST":
         user_question = request.POST.get("input_text")
+        selected_document_path = request.POST.get("document")  # Get file path from the form
+
+        if selected_document_path:
+            try:
+                # Fetch the document using the file path
+                selected_document = Document.objects.get(file=selected_document_path)
+            except Document.DoesNotExist:
+                return render(
+                    request,
+                    "app/generate_response.html",
+                    {
+                        "conversations": conversations,
+                        "topics": topics,
+                        "documents": documents,
+                        "error": "Selected document is invalid.",
+                    },
+                )
 
         if user_question:
             # Generate embedding for the user question
             embeded_question = embed_text([user_question])[0]
 
-            # Query the top 3 similar text chunks across all documents using pgvector's CosineDistance
-            similar_chunks = (
-                TextChunk.objects.annotate(similarity=CosineDistance("embedding", embeded_question)
-)
-                .order_by("similarity")[:3]
-            )
+            # Query top 3 similar text chunks, optionally filter by selected document
+            if selected_document:
+                similar_chunks = TextChunk.objects.filter(
+                    document=selected_document
+                ).annotate(
+                    similarity=CosineDistance("embedding", embeded_question)
+                ).order_by("similarity")[:3]
+            else:
+                similar_chunks = TextChunk.objects.annotate(
+                    similarity=CosineDistance("embedding", embeded_question)
+                ).order_by("similarity")[:3]
 
             # Combine the text of the top 3 similar chunks
             relevant_text_chunks = " ".join([chunk.chunk for chunk in similar_chunks])
@@ -102,9 +126,10 @@ def process_question(request, id=None):
         {
             "conversations": conversations,
             "topics": topics,
+            "documents": documents,
+            "selected_document": selected_document.file.name if selected_document else None,
         },
     )
-
 
 def generate_response(request):
     return process_question(request)
