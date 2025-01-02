@@ -1,18 +1,3 @@
-# clone the repository
-
-```sh
-git clone https://github.com/EthixDev/rag_chatbot.git
-cd rag_chatbot
-```
-
-## run the following command
-```sh
- docker compose up --build
-```
-## run 
-
-run on your localhost
-
 # RAG-Chatbot Application with Python Django and Google Gemini API
 
 This RAG-chatbot is a powerful Django application build using Google Gemini API that allows the user to have a conversation with multiple PDF Documents, by asking questions in natural language and the application will respond with relevant answers based on the uploaded documents.
@@ -102,3 +87,4 @@ docker compose up --build
 
 ### Step 5: Run the App server
 Open your web browser and visit the chatbot URL defined in your project's URL configuration (http://localhost:8080/). This should render your chatbot interface.
+
