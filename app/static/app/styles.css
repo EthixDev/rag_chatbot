@@ -26,7 +26,7 @@ body {
 }
 
 .sidebar h2 {
-    font-size: 20px;
+    font-size: 22px;
     font-weight: bold;
     margin-bottom: 20px;
 }
@@ -156,7 +156,7 @@ body {
     margin-bottom: 10px;
     padding: 10px 15px;
     border-radius: 15px;
-    font-size: 14px;
+    font-size: 18px;
     line-height: 1.5;
     word-wrap: break-word;
 }
@@ -175,7 +175,7 @@ body {
 
 /* Input and Button */
 label {
-    font-size: 14px;
+    font-size: 18px;
     font-weight: bold;
     margin-bottom: 10px;
     display: block;
@@ -187,7 +187,7 @@ select {
     margin-bottom: 12px;
     border: 1px solid #ccc;
     border-radius: 5px;
-    font-size: 14px;
+    font-size: 18px;
 }
 
 textarea {
@@ -195,7 +195,7 @@ textarea {
     padding: 10px;
     border: 1px solid #dbcfdb;
     border-radius: 5px;
-    font-size: 14px;
+    font-size: 18px;
     resize: none;
     margin-bottom: 10px;
 }
@@ -214,7 +214,7 @@ button {
 }
 
 button:hover {
-    background-color: #81bcf3;
+    background-color: #f381ea;
 }
 /* Upload Section */
 .upload-section {
@@ -259,3 +259,22 @@ button:hover {
     }
 }
 
+/* Additional styling for the new button */
+.redirect-button {
+    display: block;
+    margin-top: 30px;
+    width: 200px;
+    padding: 10px 20px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #5b8eee;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.redirect-button:hover {
+    background-color: #d118c2;
+}
+   
