@@ -15,7 +15,7 @@ body {
 
 /* Sidebar */
 .sidebar {
-    width: 25%;
+    flex: 0 0 20%; /* Sidebar width remains fixed at 20% */
     background-color: #202123;
     color: #fff;
     padding: 20px;
@@ -39,23 +39,81 @@ body {
 
 .topic-list li {
     margin-bottom: 10px;
+    display: flex; /* Align topic and delete button horizontally */
+    align-items: center; /* Center align them vertically */
+    justify-content: space-between; /* Space between topic and button */
 }
 
 .topic-list li a {
     text-decoration: none;
     color: #d1d1d1;
-    padding: 10px 15px;
-    display: block;
+    padding: 10px 10px; /* Adjust padding for reduced width */
     border-radius: 8px;
+    flex-grow: 1; /* Allows the link to take available space */
+    max-width: calc(100% - 40px); /* Reduce width to make space for delete button */
     transition: background-color 0.3s ease;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap; /* Prevents long text from breaking into a new line */
 }
 
 .topic-list li a:hover {
     background-color: #3f4148;
 }
 
+/* Delete Button */
+.btn-delete {
+    font-size: 14px;
+    color: red;
+    width: 50px; /* Adjusted width */
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f9f9f9;
+    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    margin-left: 10px; /* Space between the button and the topic */
+    cursor: pointer;
+}
+
+.btn-delete:hover {
+    background-color: #a5edf0;
+    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.btn-delete .dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    z-index: 10;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px 0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-delete:hover .dropdown-menu {
+    display: block;
+}
+
+.dropdown-item {
+    padding: 8px 16px;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.dropdown-item:hover {
+    background-color: #f0f0f0;
+}
+
 /* Chat Container */
 .chat-container {
+    flex: 0 0 60%; /* Chat container takes 60% of the width */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -91,6 +149,7 @@ body {
     border-radius: 5px;
     background-color: #f9f9f9;
     margin-bottom: 15px;
+    min-height: 300px; /* Sets a proper minimum height */
 }
 
 .chat-message {
@@ -158,33 +217,4 @@ button:hover {
     background-color: #005bb5;
 }
 
-/* Scrollbar Styling */
-.sidebar::-webkit-scrollbar,
-.conversation-history::-webkit-scrollbar {
-    width: 8px;
-}
 
-.sidebar::-webkit-scrollbar-thumb,
-.conversation-history::-webkit-scrollbar-thumb {
-    background-color: #555;
-    border-radius: 4px;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover,
-.conversation-history::-webkit-scrollbar-thumb:hover {
-    background-color: #777;
-}
-
-.delete-btn {
-    background-color: #dd7c7c;
-    color: white;
-    border: none;
-    padding: 5px 10px;
-    cursor: pointer;
-    font-size: 12px;
-    border-radius: 4px;
-}
-
-.delete-btn:hover {
-    background-color: #d109b6;
-}

@@ -14,21 +14,6 @@
             width: auto;
             padding: 5px 15px;
         }
-
-        .delete-btn {
-            background-color: #dd9090;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            font-size: 12px;
-            border-radius: 4px;
-            margin-left: 10px;
-        }
-
-        .delete-btn:hover {
-            background-color: #e67a7a;
-        }
     </style>
 </head>
 <body>
@@ -40,7 +25,11 @@
                 {% for topic in topics %}
                     <li>
                         <a href="{% url 'topic_view' id=topic.id %}">{{ topic.title }}</a>
-                        <button class="delete-btn" onclick="deleteTopic('{{ topic.id }}')">Delete</button>
+                        <button class="btn btn-delete" onclick="deleteTopic('{{ topic.id }}')">
+                            <span class="mdi mdi-delete mdi-24px"></span>
+                            <span class="mdi mdi-delete-empty mdi-24px"></span>
+                            <span>Delete</span>
+                        </button>
                     </li>
                 {% endfor %}
             </ul>
