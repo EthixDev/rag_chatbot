@@ -49,11 +49,41 @@ Navigate to the app folder where the files README and requirements are located,
 ```shell
 cd rag_chatbot
 ```
+Then create `.env` file in the app folder.
 
-## run the following command
-```sh
- docker compose up --build
+Now, paste the API key that you generated into the quotation marks. It should look something like this:
+
+```shell
+GOOGLE_API_KEY = "apikey"
 ```
-## run 
+### Step 3: Install Packages
+Before install packages, Create a virtual environment to access the dependencies.
 
-run on your localhost
+```shell
+python -m venv .venv
+```
+
+To activate the virtual environment:
+
+```shell
+source venv/bin/activate     # For linux
+```
+```shell
+.venv/Scripts/activate       # For windows 
+```
+
+Open a terminal in this folder, write this to install all the requirements for the app:
+
+```shell
+pip install -r requirements.txt
+```
+
+### Step 4: Run the docker compose
+In this same terminal, run this command to startup the app:
+
+```shell
+docker compose up --build
+```
+
+### Step 5: Run the App server
+Open your web browser and visit the chatbot URL defined in your project's URL configuration (http://localhost:8080/). This should render your chatbot interface.
