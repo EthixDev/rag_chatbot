@@ -139,7 +139,6 @@ def generate_response(request):
 def topic_view(request, id):
     return process_question(request, id)
 
-
 def similarity_search(request):
     context = {}
     if request.method == "POST":
@@ -150,16 +149,21 @@ def similarity_search(request):
                 embeddings = [embed_text(chunk) for chunk in text_chunks]
 
                 # Find the most similar chunk for the first embedding
-                similar_document = None
+                similar_chunk = None
+                corresponding_document = None
                 if embeddings:
                     embedding = embeddings[0]
-                    similar_document = TextChunk.objects.order_by(
+                    similar_chunk = TextChunk.objects.order_by(
                         CosineDistance('embedding', embedding)).first()
+                    
+                    if similar_chunk:
+                        corresponding_document = similar_chunk.document
                 
                 context = {
                     'input_text': input_text,
                     'text_chunks': text_chunks,
-                    'most_similar': similar_document.chunk if similar_document else "No similar chunk found.",
+                    'most_similar': similar_chunk.chunk if similar_chunk else "No similar chunk found.",
+                    'corresponding_document': corresponding_document.file.name if corresponding_document else "No corresponding document found.",
                 }
             except Exception as e:
                 context = {'error': str(e)}
@@ -170,7 +174,6 @@ class DocumentUpload(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request, *args, **kwargs):
-        # Pass both request data and files to the serializer
         serializer = DocumentSerializer(data=request.data)
 
         # Ensure the file is present in request.FILES
