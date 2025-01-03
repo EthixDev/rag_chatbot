@@ -125,8 +125,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# This is the URL where your static files will be accessible in the browser.
+#static files will be accessible in the browser.
 STATIC_URL = "/static/"
 
 # This tells Django where to find your static files in development.
@@ -137,3 +136,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Use WhiteNoise to serve static files efficiently in production.
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# Media files
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

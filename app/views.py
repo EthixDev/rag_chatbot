@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from .serializers import DocumentSerializer
 import json 
+from rest_framework.parsers import MultiPartParser, FormParser
 
 
 load_dotenv()
@@ -139,7 +140,7 @@ def topic_view(request, id):
     return process_question(request, id)
 
 
-def index(request):
+def similarity_search(request):
     context = {}
     if request.method == "POST":
         input_text = request.POST.get("input_text")
@@ -165,22 +166,32 @@ def index(request):
 
     return render(request, 'app/index.html', context)
 
-
 class DocumentUpload(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
     def post(self, request, *args, **kwargs):
+        # Pass both request data and files to the serializer
         serializer = DocumentSerializer(data=request.data)
+
+        # Ensure the file is present in request.FILES
+        if 'file' not in request.FILES:
+            return Response({
+                'success': False,
+                'errors': {'file': ['No file was uploaded.']}
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         if serializer.is_valid():
-            document = serializer.save()  # Calls the Document model's save() method
+            serializer.save(file=request.FILES['file'])  # Save the document instance with the file
             return Response({
                 'success': True,
                 'message': 'Document uploaded successfully!',
-                'document': DocumentSerializer(document).data
+                'document': serializer.data
             }, status=status.HTTP_201_CREATED)
+
         return Response({
             'success': False,
             'errors': serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
-    
 
 @csrf_exempt
 def delete_topic(request):
