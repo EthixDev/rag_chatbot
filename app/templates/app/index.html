@@ -112,5 +112,11 @@
             <p>{{ most_similar }}</p>
         </div>
     {% endif %}
+    {% if corresponding_document %}
+        <div class="output-section">
+            <h2>Corresponding Document:</h2>
+            <p>{{corresponding_document}}</p>
+        </div>
+    {% endif %}
 </body>
 </html>
