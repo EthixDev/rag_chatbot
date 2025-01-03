@@ -126,20 +126,14 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/5.0/howto/static-files/
-
-STATIC_URL = 'static/'
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
-
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-# Static files (CSS, JavaScript, Images)
-STATICFILES_DIRS = [BASE_DIR / "static"]
+# This is the URL where your static files will be accessible in the browser.
 STATIC_URL = "/static/"
 
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# This tells Django where to find your static files in development.
+STATICFILES_DIRS = [BASE_DIR / "app" / "static"]
 
+# This is the directory where Django will collect static files for production.
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+# Use WhiteNoise to serve static files efficiently in production.
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
