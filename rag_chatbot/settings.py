@@ -82,18 +82,27 @@ WSGI_APPLICATION = 'rag_chatbot.wsgi.application'
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': os.getenv('DATABASE_ENGINE', 'django.db.backends.sqlite3'),
+#         'NAME': os.getenv('DATABASE_NAME', 'db.sqlite3'),
+#         'USER': os.getenv('DATABASE_USER', ''),
+#         'PASSWORD': os.getenv('DATABASE_PASSWORD', ''),
+#         'HOST': os.getenv('DATABASE_HOST', 'localhost'),
+#         'PORT': os.getenv('DATABASE_PORT', '5432'),
+#     }
+# }
+
 DATABASES = {
     'default': {
-        'ENGINE': os.getenv('DATABASE_ENGINE', 'django.db.backends.sqlite3'),
-        'NAME': os.getenv('DATABASE_NAME', 'db.sqlite3'),
-        'USER': os.getenv('DATABASE_USER', ''),
-        'PASSWORD': os.getenv('DATABASE_PASSWORD', ''),
-        'HOST': os.getenv('DATABASE_HOST', 'localhost'),
-        'PORT': os.getenv('DATABASE_PORT', '5432'),
+        'ENGINE': 'django.db.backends.postgresql',  
+        'NAME': 'postgres',  
+        'USER': 'postgres',  
+        'PASSWORD': 'password',  
+        'HOST': 'localhost',  
+        'PORT': '5432',  
     }
 }
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators

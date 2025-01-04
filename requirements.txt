@@ -11,3 +11,4 @@ tiktoken==0.8.0
 PyMuPDF==1.24.8
 google-generativeai==0.8.3
 daphne
+whitenoise
