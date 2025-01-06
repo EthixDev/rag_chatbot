@@ -11,6 +11,11 @@ import os
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from django.shortcuts import get_object_or_404
+from app.models import Topic, Conversation, Document, TextChunk
+from app.serializers import TopicSerializer, ConversationSerializer, DocumentSerializer
+from RAG.embedding_gen import embed_text
+from pgvector.django import CosineDistance
 from .serializers import DocumentSerializer
 import json 
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -43,168 +48,108 @@ def generate_response_with_gemini(user_question, relevant_text_chunks, conversat
         return response.text
     except Exception as e:
         raise ValueError(f"Error generating response with Gemini: {e}")
+def render_main_page(request):
+  
+    return render(request, 'app/generate_response.html')
+class TopicListCreateView(APIView):
+    def get(self, request):
+        topics = Topic.objects.all()
+        serializer = TopicSerializer(topics, many=True)
+        return Response(serializer.data)
 
-def process_question(request, id=None):
-    # Fetch topic and conversation history if available
-    topic = get_object_or_404(Topic, id=id) if id else None
-    conversations = (
-        Conversation.objects.filter(topic=topic) if topic else None
-    )
+    def post(self, request):
+        serializer = TopicSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    topics = Topic.objects.all()
-    documents = Document.objects.all()  # Fetch all documents
 
-    selected_document = None
+class TopicDeleteView(APIView):
+    def delete(self, request, topic_id):
+        try:
+            topic = get_object_or_404(Topic, id=topic_id)
+            topic.delete()
+            return Response({"message": "Topic deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        except Topic.DoesNotExist:
+            return Response({"error": "Topic not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    if request.method == "POST":
-        user_question = request.POST.get("input_text")
-        selected_document_path = request.POST.get("document")  # Get file path from the form
 
+class ConversationListView(APIView):
+    def get(self, request, topic_id):
+        conversations = Conversation.objects.filter(topic_id=topic_id)
+        serializer = ConversationSerializer(conversations, many=True)
+        return Response(serializer.data)
+
+
+class GenerateResponseView(APIView):
+    
+    def post(self, request,id=None):
+        topic = get_object_or_404(Topic, id=id) if id else None
+        conversations = (
+            Conversation.objects.filter(topic=topic) if topic else None
+        )
+        user_question = request.data.get("input_text")
+        if topic:
+            selected_document_path=topic.document.file.name
+        else:            
+            selected_document_path = request.data.get("document")
+        
+       
+
+        selected_document = None
         if selected_document_path:
             try:
-                # Fetch the document using the file path
                 selected_document = Document.objects.get(file=selected_document_path)
             except Document.DoesNotExist:
-                return render(
-                    request,
-                    "app/generate_response.html",
-                    {
-                        "conversations": conversations,
-                        "topics": topics,
-                        "documents": documents,
-                        "error": "Selected document is invalid.",
-                    },
-                )
+                return Response({"error": "Selected document is invalid."}, status=status.HTTP_400_BAD_REQUEST)
 
-        if user_question:
-            # Generate embedding for the user question
-            embeded_question = embed_text([user_question])[0]
+        embeded_question = embed_text([user_question])[0]
+        similar_chunks = (
+            TextChunk.objects.filter(document=selected_document)
+            if selected_document
+            else TextChunk.objects.all()
+        ).annotate(
+            similarity=CosineDistance("embedding", embeded_question)
+        ).order_by("similarity")[:3]
 
-            # Query top 3 similar text chunks, optionally filter by selected document
-            if selected_document:
-                similar_chunks = TextChunk.objects.filter(
-                    document=selected_document
-                ).annotate(
-                    similarity=CosineDistance("embedding", embeded_question)
-                ).order_by("similarity")[:3]
-            else:
-                similar_chunks = TextChunk.objects.annotate(
-                    similarity=CosineDistance("embedding", embeded_question)
-                ).order_by("similarity")[:3]
+        relevant_text_chunks = " ".join([chunk.chunk for chunk in similar_chunks])
+        history = []
+        if conversations:
+            for conv in conversations:
+                formatted_question = f"Question: {conv.question}"
+                formatted_answer = f"Answer: {conv.answer}"
+                history.append(f"{formatted_question}, {formatted_answer}")
+        else:
+            history = None
 
-            # Combine the text of the top 3 similar chunks
-            relevant_text_chunks = " ".join([chunk.chunk for chunk in similar_chunks])
-
-            # Prepare conversation history
-            history = []
-            if conversations:
-                for conv in conversations:
-                    formatted_question = f"Question: {conv.question}"
-                    formatted_answer = f"Answer: {conv.answer}"
-                    history.append(f"{formatted_question}, {formatted_answer}")
-            else:
-                history = None
-
-            # Generate a response using Gemini
-            try:
-                response = generate_response_with_gemini(
-                    user_question, relevant_text_chunks, conversations=history
-                )
-            except ValueError as e:
-                response = str(e)
-
-            if not topic:
-                topic = Topic.objects.create(title=user_question)
+        response = generate_response_with_gemini(
+            user_question, relevant_text_chunks, conversations=history
+        )
+        if not topic:
+            topic = Topic.objects.create(title=user_question,document=selected_document)
             Conversation.objects.create(
                 topic=topic, question=user_question, answer=response
             )
-
-            return redirect("topic_view", topic.id if topic else None)
-
-    return render(
-        request,
-        "app/generate_response.html",
-        {
-            "conversations": conversations,
-            "topics": topics,
-            "documents": documents,
-            "selected_document": selected_document.file.name if selected_document else None,
-        },
-    )
-
-def generate_response(request):
-    return process_question(request)
+            
+        return Response({"answer": response, "topic_id": topic.id})
 
 
-def topic_view(request, id):
-    return process_question(request, id)
 
-def similarity_search(request):
-    context = {}
-    if request.method == "POST":
-        input_text = request.POST.get("input_text")
-        if input_text:
-            try:
-                text_chunks = chunk_text(input_text)
-                embeddings = [embed_text(chunk) for chunk in text_chunks]
-
-                # Find the most similar chunk for the first embedding
-                similar_chunk = None
-                corresponding_document = None
-                if embeddings:
-                    embedding = embeddings[0]
-                    similar_chunk = TextChunk.objects.order_by(
-                        CosineDistance('embedding', embedding)).first()
-                    
-                    if similar_chunk:
-                        corresponding_document = similar_chunk.document
-                
-                context = {
-                    'input_text': input_text,
-                    'text_chunks': text_chunks,
-                    'most_similar': similar_chunk.chunk if similar_chunk else "No similar chunk found.",
-                    'corresponding_document': corresponding_document.file.name if corresponding_document else "No corresponding document found.",
-                }
-            except Exception as e:
-                context = {'error': str(e)}
-
-    return render(request, 'app/index.html', context)
-
-class DocumentUpload(APIView):
+class DocumentUploadView(APIView):
     parser_classes = (MultiPartParser, FormParser)
+
+    def get(self, request, *args, **kwargs):
+        """
+        Handle GET requests to retrieve all available documents.
+        """
+        documents = Document.objects.all()
+        serializer = DocumentSerializer(documents, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     def post(self, request, *args, **kwargs):
         serializer = DocumentSerializer(data=request.data)
-
-        # Ensure the file is present in request.FILES
-        if 'file' not in request.FILES:
-            return Response({
-                'success': False,
-                'errors': {'file': ['No file was uploaded.']}
-            }, status=status.HTTP_400_BAD_REQUEST)
-
         if serializer.is_valid():
-            serializer.save(file=request.FILES['file'])  # Save the document instance with the file
-            return Response({
-                'success': True,
-                'message': 'Document uploaded successfully!',
-                'document': serializer.data
-            }, status=status.HTTP_201_CREATED)
-
-        return Response({
-            'success': False,
-            'errors': serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
-
-@csrf_exempt
-def delete_topic(request):
-    if request.method == 'POST':
-        try:
-            data = json.loads(request.body)
-            topic_id = data.get('id')
-            topic = get_object_or_404(Topic, id=topic_id)
-            topic.delete()
-            return JsonResponse({'message': 'Topic deleted successfully'})
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
-    return JsonResponse({'error': 'Invalid request method'}, status=405)
+            serializer.save(file=request.FILES["file"])
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
