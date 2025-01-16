@@ -88,7 +88,7 @@ class GenerateResponseView(APIView):
         )
         user_question = request.data.get("input_text")
         if topic:
-            selected_document_path=topic.document.file.name
+            selected_document_path = topic.document.file.name if topic.document and topic.document.file else None
         else:            
             selected_document_path = request.data.get("document")
         
@@ -150,3 +150,12 @@ class DocumentUploadView(APIView):
             serializer.save(file=request.FILES["file"])
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class FetchDocumentsView(APIView):
+    def get(self, request):
+        """
+        API to fetch all available documents for selection.
+        """
+        documents = Document.objects.all()
+        data = [{"file": doc.file.name, "title": doc.title} for doc in documents]
+        return Response(data, status=status.HTTP_200_OK)
