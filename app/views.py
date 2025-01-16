@@ -1,10 +1,7 @@
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import render, get_object_or_404
 from RAG.embedding_gen import embed_text
-from RAG.embedding_gen import chunk_text
 from app.models import Document, Conversation, TextChunk, Topic
 from pgvector.django import CosineDistance
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
 from dotenv import load_dotenv
 import google.generativeai as genai
 import os
@@ -17,7 +14,6 @@ from app.serializers import TopicSerializer, ConversationSerializer, DocumentSer
 from RAG.embedding_gen import embed_text
 from pgvector.django import CosineDistance
 from .serializers import DocumentSerializer
-import json 
 from rest_framework.parsers import MultiPartParser, FormParser
 
 
@@ -48,9 +44,10 @@ def generate_response_with_gemini(user_question, relevant_text_chunks, conversat
         return response.text
     except Exception as e:
         raise ValueError(f"Error generating response with Gemini: {e}")
-def render_main_page(request):
-  
-    return render(request, 'app/generate_response.html')
+    
+def render_ui(request):
+    return render(request, 'app/UI.html')
+
 class TopicListCreateView(APIView):
     def get(self, request):
         topics = Topic.objects.all()

@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EthixAI Chatbot</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* General Reset */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+
+        /* Main Container */
+        .main-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            flex: 0 0 20%;
+            background-color: #1e90ff;
+            color: white;
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar h2 {
+            margin-bottom: 20px;
+        }
+        .topic-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .topic-list li {
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .topic-list li a {
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #0078d7;
+            flex-grow: 1;
+        }
+
+        .topic-list li a:hover {
+            background-color: #005bb5;
+        }
+
+        .topic-list li button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .topic-list li button:hover {
+            background-color: #c82333;
+        }
+
+        /* Chat Section */
+        .chat-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            background-color: #fff;
+            overflow-y: auto;
+        }
+
+        .chat-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .conversation-history {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #f4f4f4;
+        }
+
+        .chat-message {
+            margin-bottom: 10px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .chat-message.user {
+            background-color: #d1e7dd;
+            align-self: flex-end;
+        }
+
+        .chat-message.ai {
+            background-color: #f8d7da;
+            align-self: flex-start;
+        }
+
+        .chat-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        textarea, select, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        /* Upload Section */
+        .upload-section {
+            flex: 0 0 20%;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-left: 1px solid #ddd;
+        }
+
+        .upload-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        input, button {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- History Sidebar -->
+        <aside class="sidebar">
+            <h2>History</h2>
+            <ul id="topic-list" class="topic-list"></ul>
+        </aside>
+
+        <!-- Chat Section -->
+        <section class="chat-section">
+            <div class="chat-window">
+                <h2>EthixAI Chatbot</h2>
+                <div id="conversation-history" class="conversation-history"></div>
+                <form id="chat-form" class="chat-form">
+                    <textarea id="user-input" placeholder="Ask me something..."></textarea>
+                    <select id="document-select"></select>
+                    <button type="submit">Send</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Document Upload Section -->
+        <aside class="upload-section">
+            <h3>Upload Document</h3>
+            <form id="upload-form" class="upload-form">
+                <input type="file" id="file" name="file" accept=".pdf" required>
+                <input type="text" id="title" name="title" placeholder="Document Title" required>
+                <button type="submit">Upload</button>
+            </form>
+        </aside>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const topicList = document.getElementById("topic-list");
+            const chatForm = document.getElementById("chat-form");
+            const conversationHistory = document.getElementById("conversation-history");
+            const documentSelect = document.getElementById("document-select");
+            const uploadForm = document.getElementById("upload-form");
+
+            let currentTopicId = null;
+
+            async function fetchTopics() {
+                const response = await axios.get("/api/topics/");
+                topicList.innerHTML = "";
+                response.data.forEach(topic => {
+                    const li = document.createElement("li");
+                    li.innerHTML = `
+                        <a href="#" onclick="fetchConversations(${topic.id})">${topic.title}</a>
+                        <button onclick="deleteTopic(${topic.id})">Delete</button>
+                    `;
+                    topicList.appendChild(li);
+                });
+            }
+
+            window.fetchConversations = async function (topicId) {
+                const response = await axios.get(`/api/conversations/${topicId}/`);
+                conversationHistory.innerHTML = "";
+                response.data.forEach(conv => {
+                    const userMessage = `<div class="chat-message user">${conv.question}</div>`;
+                    const aiResponse = `<div class="chat-message ai">${conv.answer}</div>`;
+                    conversationHistory.innerHTML += userMessage + aiResponse;
+                });
+                currentTopicId = topicId;
+            };
+
+            chatForm.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                const userInput = document.getElementById("user-input").value;
+                const selectedDocument = documentSelect.value;
+
+                if (!userInput) {
+                    alert("Please enter a message.");
+                    return;
+                }
+
+                const endpoint = currentTopicId ? `/api/generate-response/${currentTopicId}/` : `/api/generate-response/`;
+                const requestBody = { input_text: userInput };
+                if (!currentTopicId) {
+                    requestBody.document = selectedDocument;
+                }
+
+                const response = await axios.post(endpoint, requestBody);
+                const result = response.data;
+
+                conversationHistory.innerHTML += `
+                    <div class="chat-message user">${userInput}</div>
+                    <div class="chat-message ai">${result.answer}</div>
+                `;
+
+                if (result.topic_id && !currentTopicId) {
+                    currentTopicId = result.topic_id;
+                }
+
+                chatForm.reset();
+            });
+
+            async function fetchDocuments() {
+                const response = await axios.get("/api/upload-document/");
+                documentSelect.innerHTML = `<option value="">All Documents</option>`;
+                response.data.forEach(doc => {
+                    documentSelect.innerHTML += `<option value="${doc.file}">${doc.title}</option>`;
+                });
+            }
+
+            uploadForm.addEventListener("submit", async function (event) {
+                event.preventDefault();
+                const formData = new FormData(uploadForm);
+                const response = await axios.post("/api/upload-document/", formData);
+                if (response.status === 201) {
+                    alert("File uploaded successfully!");
+                    fetchDocuments();
+                } else {
+                    alert("Error uploading file.");
+                }
+                uploadForm.reset();
+            });
+
+            window.deleteTopic = async function (topicId) {
+                await axios.delete(`/api/topics/${topicId}/`);
+                fetchTopics();
+                if (topicId === currentTopicId) {
+                    currentTopicId = null;
+                    conversationHistory.innerHTML = "";
+                }
+            };
+
+            fetchTopics();
+            fetchDocuments();
+        });
+    </script>
+</body>
+</html>
