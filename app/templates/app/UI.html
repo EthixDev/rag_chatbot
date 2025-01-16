@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EthixAI Chatbot</title>
+    <title>Ethix Chatbot</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         /* General Reset */
@@ -15,61 +15,57 @@
             color: #333;
         }
 
-        /* Main Container */
+        /* Layout */
         .main-container {
             display: flex;
             height: 100vh;
+            overflow: hidden;
         }
 
         /* Sidebar */
         .sidebar {
-            flex: 0 0 20%;
-            background-color: #1e90ff;
-            color: white;
+            flex: 0 0 25%;
+            background-color: #f5f3fa;
             padding: 20px;
-            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
         }
 
         .sidebar h2 {
+            color: #6b48ff;
             margin-bottom: 20px;
         }
-        .topic-list {
-            list-style: none;
-            padding: 0;
-        }
 
-        .topic-list li {
-            margin-bottom: 10px;
+        .conversation-list {
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+        }
+
+        .conversation-item {
+            display: flex;
             align-items: center;
-        }
-
-        .topic-list li a {
-            color: white;
-            text-decoration: none;
+            justify-content: space-between;
+            background-color: #ffffff;
             padding: 10px;
-            border-radius: 5px;
-            background-color: #0078d7;
-            flex-grow: 1;
-        }
-
-        .topic-list li a:hover {
-            background-color: #005bb5;
-        }
-
-        .topic-list li button {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 5px 10px;
+            border-radius: 8px;
             cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            color: #333;
         }
 
-        .topic-list li button:hover {
-            background-color: #c82333;
+        .conversation-item:hover {
+            background-color: #e6e1f8;
+        }
+
+        .conversation-item button {
+            background: none;
+            border: none;
+            color: #f76c6c;
+            font-size: 16px;
+            cursor: pointer;
         }
 
         /* Chat Section */
@@ -78,223 +74,249 @@
             display: flex;
             flex-direction: column;
             padding: 20px;
-            background-color: #fff;
-            overflow-y: auto;
+            position: relative;
         }
 
-        .chat-window {
-            flex: 1;
+        .chat-header {
             display: flex;
-            flex-direction: column;
             justify-content: space-between;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            padding: 20px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .chat-header h2 {
+            color: #6b48ff;
+        }
+
+        .upload-button {
+            background-color: #6b48ff;
+            color: #ffffff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .upload-button:hover {
+            background-color: #5538cc;
         }
 
         .conversation-history {
             flex: 1;
             overflow-y: auto;
-            margin-bottom: 20px;
-            border: 1px solid #ddd;
             padding: 10px;
-            border-radius: 5px;
-            background-color: #f4f4f4;
+            background-color: #f9f9f9;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
 
-        .chat-message {
-            margin-bottom: 10px;
-            padding: 10px;
-            border-radius: 5px;
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 14px;
+            line-height: 1.6;
         }
 
-        .chat-message.user {
-            background-color: #d1e7dd;
-            align-self: flex-end;
+        .message.user {
+            background-color: #6b48ff;
+            color: #fff;
+            text-align: right;
+            margin-left: auto;
+            max-width: 60%;
         }
 
-        .chat-message.ai {
-            background-color: #f8d7da;
-            align-self: flex-start;
+        .message.ai {
+            background-color: #f1f0ff;
+            color: #333;
+            text-align: left;
+            margin-right: auto;
+            max-width: 60%;
         }
 
-        .chat-form {
+        .chat-input {
             display: flex;
-            flex-direction: column;
+            align-items: center;
             gap: 10px;
+            margin-top: 20px;
         }
 
-        textarea, select, button {
-            width: 100%;
+        textarea, select {
+            flex: 1;
             padding: 10px;
             border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            resize: none;
         }
 
-        button {
-            background-color: #28a745;
+        button.send-button {
+            background-color: #6b48ff;
             color: white;
             border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
             cursor: pointer;
+            font-size: 14px;
         }
 
-        button:hover {
-            background-color: #218838;
+        button.send-button:hover {
+            background-color: #5538cc;
         }
 
-        /* Upload Section */
-        .upload-section {
-            flex: 0 0 20%;
-            padding: 20px;
-            background-color: #f9f9f9;
-            border-left: 1px solid #ddd;
+        /* Loading Animation */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
         }
 
-        .upload-form {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #6b48ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
         }
 
-        input, button {
-            padding: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
 <body>
     <div class="main-container">
-        <!-- History Sidebar -->
+        <!-- Sidebar -->
         <aside class="sidebar">
-            <h2>History</h2>
-            <ul id="topic-list" class="topic-list"></ul>
+            <h2>CONVERSATIONS</h2>
+            <div class="conversation-list" id="conversation-list">
+                <!-- Conversations will be dynamically loaded here -->
+            </div>
         </aside>
 
         <!-- Chat Section -->
         <section class="chat-section">
-            <div class="chat-window">
-                <h2>EthixAI Chatbot</h2>
-                <div id="conversation-history" class="conversation-history"></div>
-                <form id="chat-form" class="chat-form">
-                    <textarea id="user-input" placeholder="Ask me something..."></textarea>
-                    <select id="document-select"></select>
-                    <button type="submit">Send</button>
-                </form>
+            <div class="chat-header">
+                <h2>Chat</h2>
+                <button class="upload-button" id="upload-button">Upload Your Document</button>
             </div>
-        </section>
-
-        <!-- Document Upload Section -->
-        <aside class="upload-section">
-            <h3>Upload Document</h3>
-            <form id="upload-form" class="upload-form">
-                <input type="file" id="file" name="file" accept=".pdf" required>
-                <input type="text" id="title" name="title" placeholder="Document Title" required>
-                <button type="submit">Upload</button>
+            <div class="conversation-history" id="conversation-history">
+                <!-- Chat messages will be dynamically loaded here -->
+            </div>
+            <form class="chat-input" id="chat-form">
+                <select id="document-select">
+                    <option value="">Select Document</option>
+                </select>
+                <textarea id="user-input" rows="2" placeholder="Write your message here..."></textarea>
+                <button type="submit" class="send-button">Send</button>
             </form>
-        </aside>
+        </section>
+    </div>
+
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const topicList = document.getElementById("topic-list");
-            const chatForm = document.getElementById("chat-form");
+            const conversationList = document.getElementById("conversation-list");
             const conversationHistory = document.getElementById("conversation-history");
+            const chatForm = document.getElementById("chat-form");
+            const userInput = document.getElementById("user-input");
             const documentSelect = document.getElementById("document-select");
-            const uploadForm = document.getElementById("upload-form");
+            const uploadButton = document.getElementById("upload-button");
+            const loadingOverlay = document.getElementById("loading-overlay");
 
             let currentTopicId = null;
 
-            async function fetchTopics() {
+            async function fetchConversations() {
                 const response = await axios.get("/api/topics/");
-                topicList.innerHTML = "";
+                conversationList.innerHTML = "";
                 response.data.forEach(topic => {
-                    const li = document.createElement("li");
-                    li.innerHTML = `
-                        <a href="#" onclick="fetchConversations(${topic.id})">${topic.title}</a>
-                        <button onclick="deleteTopic(${topic.id})">Delete</button>
+                    const div = document.createElement("div");
+                    div.className = "conversation-item";
+                    div.innerHTML = `
+                        <a href="/chat/${topic.id}" onclick="loadConversation(${topic.id}); return false;">${topic.title}</a>
+                        <button onclick="deleteConversation(${topic.id})">&times;</button>
                     `;
-                    topicList.appendChild(li);
+                    conversationList.appendChild(div);
                 });
             }
 
-            window.fetchConversations = async function (topicId) {
+            async function loadConversation(topicId) {
                 const response = await axios.get(`/api/conversations/${topicId}/`);
                 conversationHistory.innerHTML = "";
                 response.data.forEach(conv => {
-                    const userMessage = `<div class="chat-message user">${conv.question}</div>`;
-                    const aiResponse = `<div class="chat-message ai">${conv.answer}</div>`;
-                    conversationHistory.innerHTML += userMessage + aiResponse;
+                    conversationHistory.innerHTML += `
+                        <div class="message user">${conv.question}</div>
+                        <div class="message ai">${conv.answer}</div>
+                    `;
                 });
                 currentTopicId = topicId;
-            };
-
-            chatForm.addEventListener("submit", async function (event) {
-                event.preventDefault();
-                const userInput = document.getElementById("user-input").value;
-                const selectedDocument = documentSelect.value;
-
-                if (!userInput) {
-                    alert("Please enter a message.");
-                    return;
-                }
-
-                const endpoint = currentTopicId ? `/api/generate-response/${currentTopicId}/` : `/api/generate-response/`;
-                const requestBody = { input_text: userInput };
-                if (!currentTopicId) {
-                    requestBody.document = selectedDocument;
-                }
-
-                const response = await axios.post(endpoint, requestBody);
-                const result = response.data;
-
-                conversationHistory.innerHTML += `
-                    <div class="chat-message user">${userInput}</div>
-                    <div class="chat-message ai">${result.answer}</div>
-                `;
-
-                if (result.topic_id && !currentTopicId) {
-                    currentTopicId = result.topic_id;
-                }
-
-                chatForm.reset();
-            });
-
-            async function fetchDocuments() {
-                const response = await axios.get("/api/upload-document/");
-                documentSelect.innerHTML = `<option value="">All Documents</option>`;
-                response.data.forEach(doc => {
-                    documentSelect.innerHTML += `<option value="${doc.file}">${doc.title}</option>`;
-                });
             }
 
-            uploadForm.addEventListener("submit", async function (event) {
-                event.preventDefault();
-                const formData = new FormData(uploadForm);
-                const response = await axios.post("/api/upload-document/", formData);
-                if (response.status === 201) {
-                    alert("File uploaded successfully!");
-                    fetchDocuments();
-                } else {
-                    alert("Error uploading file.");
-                }
-                uploadForm.reset();
+            chatForm.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                const text = userInput.value.trim();
+                if (!text) return;
+
+                const response = await axios.post(`/api/generate-response/${currentTopicId || ''}`, {
+                    input_text: text,
+                    document: documentSelect.value || null,
+                });
+
+                conversationHistory.innerHTML += `
+                    <div class="message user">${text}</div>
+                    <div class="message ai">${response.data.answer}</div>
+                `;
+
+                userInput.value = "";
             });
 
-            window.deleteTopic = async function (topicId) {
-                await axios.delete(`/api/topics/${topicId}/`);
-                fetchTopics();
-                if (topicId === currentTopicId) {
-                    currentTopicId = null;
-                    conversationHistory.innerHTML = "";
-                }
-            };
+            uploadButton.addEventListener("click", async () => {
+                const fileInput = document.createElement("input");
+                fileInput.type = "file";
+                fileInput.accept = ".pdf";
 
-            fetchTopics();
-            fetchDocuments();
+                fileInput.onchange = async () => {
+                    const file = fileInput.files[0];
+                    if (!file) return;
+
+                    const formData = new FormData();
+                    formData.append("file", file);
+                    formData.append("title", file.name);
+
+                    loadingOverlay.style.display = "flex";
+                    try {
+                        const response = await axios.post("/api/upload-document/", formData);
+                        alert("File uploaded successfully!");
+                        fetchDocuments();
+                    } catch (error) {
+                        alert("Error uploading file.");
+                    } finally {
+                        loadingOverlay.style.display = "none";
+                    }
+                };
+
+                fileInput.click();
+            });
+
+            fetchConversations();
         });
     </script>
 </body>
