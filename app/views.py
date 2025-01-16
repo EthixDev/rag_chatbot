@@ -8,12 +8,7 @@ import os
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.shortcuts import get_object_or_404
-from app.models import Topic, Conversation, Document, TextChunk
 from app.serializers import TopicSerializer, ConversationSerializer, DocumentSerializer
-from RAG.embedding_gen import embed_text
-from pgvector.django import CosineDistance
-from .serializers import DocumentSerializer
 from rest_framework.parsers import MultiPartParser, FormParser
 
 
