@@ -234,90 +234,160 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            const conversationList = document.getElementById("conversation-list");
-            const conversationHistory = document.getElementById("conversation-history");
-            const chatForm = document.getElementById("chat-form");
-            const userInput = document.getElementById("user-input");
-            const documentSelect = document.getElementById("document-select");
-            const uploadButton = document.getElementById("upload-button");
-            const loadingOverlay = document.getElementById("loading-overlay");
+    const conversationList = document.getElementById("conversation-list");
+    const conversationHistory = document.getElementById("conversation-history");
+    const chatForm = document.getElementById("chat-form");
+    const userInput = document.getElementById("user-input");
+    const documentSelect = document.getElementById("document-select");
+    const uploadButton = document.getElementById("upload-button");
+    const loadingOverlay = document.getElementById("loading-overlay");
 
-            let currentTopicId = null;
+    let currentTopicId = null;
 
-            async function fetchConversations() {
-                const response = await axios.get("/api/topics/");
-                conversationList.innerHTML = "";
-                response.data.forEach(topic => {
-                    const div = document.createElement("div");
-                    div.className = "conversation-item";
-                    div.innerHTML = `
-                        <a href="/chat/${topic.id}" onclick="loadConversation(${topic.id}); return false;">${topic.title}</a>
-                        <button onclick="deleteConversation(${topic.id})">&times;</button>
-                    `;
-                    conversationList.appendChild(div);
-                });
-            }
-
-            async function loadConversation(topicId) {
-                const response = await axios.get(`/api/conversations/${topicId}/`);
-                conversationHistory.innerHTML = "";
-                response.data.forEach(conv => {
-                    conversationHistory.innerHTML += `
-                        <div class="message user">${conv.question}</div>
-                        <div class="message ai">${conv.answer}</div>
-                    `;
-                });
-                currentTopicId = topicId;
-            }
-
-            chatForm.addEventListener("submit", async (e) => {
-                e.preventDefault();
-                const text = userInput.value.trim();
-                if (!text) return;
-
-                const response = await axios.post(`/api/generate-response/${currentTopicId || ''}`, {
-                    input_text: text,
-                    document: documentSelect.value || null,
-                });
-
-                conversationHistory.innerHTML += `
-                    <div class="message user">${text}</div>
-                    <div class="message ai">${response.data.answer}</div>
+    // Fetch all topics
+    async function fetchConversations() {
+        try {
+            const response = await axios.get("/api/topics/");
+            conversationList.innerHTML = ""; // Clear existing conversations
+            response.data.forEach(topic => {
+                const div = document.createElement("div");
+                div.className = "conversation-item";
+                div.innerHTML = `
+                    <span onclick="loadConversation(${topic.id});" style="cursor: pointer;">${topic.title}</span>
+                    <button onclick="deleteConversation(${topic.id})" style="color: red; border: none; background: none; cursor: pointer;">&times;</button>
                 `;
-
-                userInput.value = "";
+                conversationList.appendChild(div);
             });
+        } catch (error) {
+            console.error("Error fetching topics:", error);
+            alert("Failed to load topics.");
+        }
+    }
 
-            uploadButton.addEventListener("click", async () => {
-                const fileInput = document.createElement("input");
-                fileInput.type = "file";
-                fileInput.accept = ".pdf";
-
-                fileInput.onchange = async () => {
-                    const file = fileInput.files[0];
-                    if (!file) return;
-
-                    const formData = new FormData();
-                    formData.append("file", file);
-                    formData.append("title", file.name);
-
-                    loadingOverlay.style.display = "flex";
-                    try {
-                        const response = await axios.post("/api/upload-document/", formData);
-                        alert("File uploaded successfully!");
-                        fetchDocuments();
-                    } catch (error) {
-                        alert("Error uploading file.");
-                    } finally {
-                        loadingOverlay.style.display = "none";
-                    }
-                };
-
-                fileInput.click();
+    // Load a conversation by topic ID
+    async function loadConversation(topicId) {
+        try {
+            const response = await axios.get(`/api/conversations/${topicId}/`);
+            conversationHistory.innerHTML = ""; // Clear existing messages
+            response.data.forEach(conv => {
+                conversationHistory.innerHTML += `
+                    <div class="message user">${conv.question}</div>
+                    <div class="message ai">${conv.answer}</div>
+                `;
             });
+            currentTopicId = topicId; // Set the current topic ID
+        } catch (error) {
+            console.error("Error loading conversation:", error);
+            alert("Failed to load conversation.");
+        }
+    }
 
-            fetchConversations();
-        });
+    // Submit a new message to the AI
+    chatForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const text = userInput.value.trim();
+        if (!text) {
+            alert("Please enter a message.");
+            return;
+        }
+
+        try {
+            const endpoint = currentTopicId
+                ? `/api/generate-response/${currentTopicId}/`
+                : "/api/generate-response/";
+            const requestBody = { input_text: text };
+            if (!currentTopicId) {
+                requestBody.document = documentSelect.value || null; // Add document if starting a new topic
+            }
+
+            const response = await axios.post(endpoint, requestBody);
+
+            // Append user message and AI response to the chat
+            conversationHistory.innerHTML += `
+                <div class="message user">${text}</div>
+                <div class="message ai">${response.data.answer}</div>
+            `;
+
+            // If a new topic was created, update currentTopicId
+            if (response.data.topic_id && !currentTopicId) {
+                currentTopicId = response.data.topic_id;
+                fetchConversations(); // Refresh the topic list
+            }
+
+            userInput.value = ""; // Clear input field
+        } catch (error) {
+            console.error("Error generating response:", error);
+            alert("Failed to generate response. Please try again.");
+        }
+    });
+
+    // Upload a document
+    uploadButton.addEventListener("click", async () => {
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = ".pdf";
+
+        fileInput.onchange = async () => {
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append("file", file);
+            formData.append("title", file.name);
+
+            loadingOverlay.style.display = "flex"; // Show loading spinner
+            try {
+                const response = await axios.post("/api/upload-document/", formData);
+                alert("File uploaded successfully!");
+                fetchDocuments(); // Refresh document list
+            } catch (error) {
+                console.error("Error uploading document:", error);
+                alert("Failed to upload document.");
+            } finally {
+                loadingOverlay.style.display = "none"; // Hide loading spinner
+            }
+        };
+
+        fileInput.click(); // Trigger the file input
+    });
+
+    // Fetch available documents for the document selector
+    async function fetchDocuments() {
+        try {
+            const response = await axios.get("/api/fetch-documents/");
+            documentSelect.innerHTML = `<option value="">Select Document</option>`;
+            response.data.forEach(doc => {
+                documentSelect.innerHTML += `<option value="${doc.file}">${doc.title}</option>`;
+            });
+        } catch (error) {
+            console.error("Error fetching documents:", error);
+        }
+    }
+
+    // Delete a topic
+    async function deleteConversation(topicId) {
+        try {
+            const response = await axios.delete(`/api/topics/${topicId}/`);
+            alert("Topic deleted successfully.");
+            fetchConversations(); // Refresh topic list
+            if (currentTopicId === topicId) {
+                currentTopicId = null; // Reset current topic
+                conversationHistory.innerHTML = ""; // Clear conversation history
+            }
+        } catch (error) {
+            console.error("Error deleting topic:", error);
+            alert("Failed to delete topic.");
+        }
+    }
+
+    // Initialize: Fetch conversations and documents
+    fetchConversations();
+    fetchDocuments();
+
+    // Make the loadConversation function globally available
+    window.loadConversation = loadConversation;
+    window.deleteConversation = deleteConversation;
+});
     </script>
 </body>
 </html>
