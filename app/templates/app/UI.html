@@ -6,7 +6,7 @@
     <title>Ethix Chatbot</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        /* General Reset */
+       /* General Reset */
         body {
             margin: 0;
             padding: 0;
@@ -14,27 +14,32 @@
             background-color: #f0f4fc;
             color: #333;
         }
-
-        /* Layout */
+       /* Layout */
         .main-container {
             display: flex;
             height: 100vh;
             overflow: hidden;
-        }
+            justify-content: flex-start; /* Align content to the left */
+            }
 
         /* Sidebar */
         .sidebar {
-            flex: 0 0 25%;
+            flex: 0 0 20%; /* Fixed width: 20% */
             background-color: #d1c9c9;
             padding: 20px;
             display: flex;
             flex-direction: column;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
             border-right: 1px solid #ececec;
+            position: fixed; /* Keep sidebar fixed to the left */
+            top: 0;
+            left: 0;
+            height: 100%; /* Full height */
+            z-index: 100; /* Ensure it appears above other elements */
         }
 
         .sidebar h2 {
-            color: #a80bad;
+            color: #0d0d0e;
             margin-bottom: 20px;
             font-size: 1.8em;
             font-weight: bold;
@@ -68,7 +73,7 @@
             background: none;
             border: none;
             color: #ff6c6c;
-            font-size: 18px;
+            font-size: 16px;
             cursor: pointer;
             transition: transform 0.2s ease;
         }
@@ -79,12 +84,15 @@
 
         /* Chat Section */
         .chat-section {
-            flex: 1;
+            flex: 0 0 55%; 
+            margin-left: 20%; 
             display: flex;
             flex-direction: column;
             padding: 20px;
             position: relative;
             background-color: #f9f9fc;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Add slight shadow */
+            border-radius: 8px; /* Optional: rounded corners */
         }
 
         .chat-header {
@@ -95,18 +103,18 @@
         }
 
         .chat-header h2 {
-            color: #c778c0;
-            font-size: 2.0em;
+            color: #131213;
+            font-size: 1.8em;
             font-weight: bold;
         }
 
         .upload-button {
-            background-color: #516bb3;
+            background-color: #6d82fc;
             color: #ffffff;
             padding: 12px 25px;
             border: none;
             border-radius: 8px;
-            font-size: 1.0em;
+            font-size: 0.8em;
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -114,7 +122,7 @@
         }
 
         .upload-button:hover {
-            background-color: #be76c0;
+            background-color: #e7e0e7;
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
         }
 
@@ -131,13 +139,13 @@
             margin-bottom: 15px;
             padding: 15px 20px;
             border-radius: 12px;
-            font-size: 1.3em;
+            font-size: 1.1em;
             line-height: 1.8;
         }
 
         .message.user {
-            background-color: #be78ad;
-            color: #fff;
+            background-color: #f0f4fc;
+            color: #111010;
             text-align: right;
             margin-left: auto;
             max-width: 70%;
@@ -170,7 +178,7 @@
         }
 
         button.send-button {
-            background-color: #4b67ff;
+            background-color: #6d82fc;
             color: white;
             border: none;
             padding: 12px 25px;
