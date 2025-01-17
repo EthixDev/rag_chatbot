@@ -16,7 +16,7 @@ class ConversationAdmin(admin.ModelAdmin):
 
 
 class TopicAdmin(admin.ModelAdmin):
-    list_display = ('title', 'created_at')
+    list_display = ('id', 'title', 'created_at')
 
 admin.site.register(Conversation, ConversationAdmin)
 admin.site.register(Document, DocumentAdmin)

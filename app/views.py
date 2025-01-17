@@ -73,21 +73,16 @@ class ConversationListView(APIView):
         serializer = ConversationSerializer(conversations, many=True)
         return Response(serializer.data)
 
-
 class GenerateResponseView(APIView):
-    
-    def post(self, request,id=None):
+    def post(self, request, id=None):
         topic = get_object_or_404(Topic, id=id) if id else None
-        conversations = (
-            Conversation.objects.filter(topic=topic) if topic else None
-        )
         user_question = request.data.get("input_text")
+
+        # Fetch the associated document
         if topic:
             selected_document_path = topic.document.file.name if topic.document and topic.document.file else None
-        else:            
+        else:
             selected_document_path = request.data.get("document")
-        
-       
 
         selected_document = None
         if selected_document_path:
@@ -96,18 +91,24 @@ class GenerateResponseView(APIView):
             except Document.DoesNotExist:
                 return Response({"error": "Selected document is invalid."}, status=status.HTTP_400_BAD_REQUEST)
 
-        embeded_question = embed_text([user_question])[0]
+        # Generate the embedded question
+        embedded_question = embed_text([user_question])[0]
+
+        # Find the most relevant text chunks
         similar_chunks = (
             TextChunk.objects.filter(document=selected_document)
             if selected_document
             else TextChunk.objects.all()
         ).annotate(
-            similarity=CosineDistance("embedding", embeded_question)
+            similarity=CosineDistance("embedding", embedded_question)
         ).order_by("similarity")[:3]
 
         relevant_text_chunks = " ".join([chunk.chunk for chunk in similar_chunks])
+
+        # Fetch conversation history
         history = []
-        if conversations:
+        if topic:
+            conversations = Conversation.objects.filter(topic=topic)
             for conv in conversations:
                 formatted_question = f"Question: {conv.question}"
                 formatted_answer = f"Answer: {conv.answer}"
@@ -115,18 +116,21 @@ class GenerateResponseView(APIView):
         else:
             history = None
 
+        # Generate response using Gemini
         response = generate_response_with_gemini(
             user_question, relevant_text_chunks, conversations=history
         )
+
+        # Save the conversation and topic
         if not topic:
-            topic = Topic.objects.create(title=user_question,document=selected_document)
-            Conversation.objects.create(
-                topic=topic, question=user_question, answer=response
-            )
-            
+            topic = Topic.objects.create(title=user_question, document=selected_document)
+
+        # Create a new Conversation regardless of topic existence
+        Conversation.objects.create(
+            topic=topic, question=user_question, answer=response
+        )
+
         return Response({"answer": response, "topic_id": topic.id})
-
-
 
 class DocumentUploadView(APIView):
     parser_classes = (MultiPartParser, FormParser)
