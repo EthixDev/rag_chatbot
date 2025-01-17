@@ -6,7 +6,7 @@
     <title>Ethix Chatbot</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-       /* General Reset */
+        /* General Reset */
         body {
             margin: 0;
             padding: 0;
@@ -14,13 +14,13 @@
             background-color: #f0f4fc;
             color: #333;
         }
-       /* Layout */
+        /* Layout */
         .main-container {
             display: flex;
             height: 100vh;
             overflow: hidden;
             justify-content: flex-start; /* Align content to the left */
-            }
+        }
 
         /* Sidebar */
         .sidebar {
@@ -31,11 +31,11 @@
             flex-direction: column;
             box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
             border-right: 1px solid #ececec;
-            position: fixed; /* Keep sidebar fixed to the left */
+            position: fixed;
             top: 0;
             left: 0;
             height: 100%; /* Full height */
-            z-index: 100; /* Ensure it appears above other elements */
+            z-index: 100;
         }
 
         .sidebar h2 {
@@ -84,20 +84,20 @@
 
         /* Chat Section */
         .chat-section {
-            flex: 0 0 55%; 
-            margin-left: 20%; 
+            flex: 1;
+            margin-left: 20%; /* Adjust for left sidebar */
+            margin-right: 20%; /* Adjust for right sidebar */
             display: flex;
             flex-direction: column;
             padding: 20px;
-            position: relative;
             background-color: #f9f9fc;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Add slight shadow */
-            border-radius: 8px; /* Optional: rounded corners */
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
         }
 
         .chat-header {
             display: flex;
-            justify-content: space-between;
+            justify-content: left; /* Center the Chat header */
             align-items: center;
             margin-bottom: 20px;
         }
@@ -108,17 +108,36 @@
             font-weight: bold;
         }
 
+        /* Right Sidebar */
+        .right-sidebar {
+            flex: 0 0 20%; /* Fixed width: 20% */
+            background-color: #d1c9c9;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start; /* Align content to the left of the sidebar */
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+            border-left: 1px solid #ececec;
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100%; /* Full height */
+            z-index: 100;
+        }
+
         .upload-button {
             background-color: #6d82fc;
             color: #ffffff;
             padding: 12px 25px;
             border: none;
             border-radius: 8px;
-            font-size: 0.8em;
+            font-size: 1em;
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 20px; /* Add spacing below the button */
+            align-self: center; /* Center the button horizontally */
         }
 
         .upload-button:hover {
@@ -166,18 +185,21 @@
             align-items: center;
             gap: 15px;
             margin-top: 20px;
+            width: 100%;
         }
 
         textarea, select {
-            flex: 1;
+            flex: 1; /* Make inputs grow proportionally */
             padding: 15px;
             border: 1px solid #ddd;
             border-radius: 8px;
             font-size: 1.3em;
             resize: none;
+            box-sizing: border-box; /* Include padding in width calculation */
         }
 
         button.send-button {
+            flex: 0 0 auto; /* Prevent the button from growing */
             background-color: #6d82fc;
             color: white;
             border: none;
@@ -230,7 +252,7 @@
 </head>
 <body>
     <div class="main-container">
-        <!-- Sidebar -->
+        <!-- Left Sidebar -->
         <aside class="sidebar">
             <h2>CONVERSATIONS</h2>
             <div class="conversation-list" id="conversation-list">
@@ -242,7 +264,6 @@
         <section class="chat-section">
             <div class="chat-header">
                 <h2>Chat</h2>
-                <button class="upload-button" id="upload-button">Upload Your Document</button>
             </div>
             <div class="conversation-history" id="conversation-history">
                 <!-- Chat messages will be dynamically loaded here -->
@@ -255,12 +276,11 @@
                 <button type="submit" class="send-button">Send</button>
             </form>
         </section>
+        <!-- Right Sidebar -->
+        <aside class="right-sidebar">
+            <button class="upload-button" id="upload-button">Upload Your Document</button>
+        </aside>
     </div>
-
-    <div class="loading-overlay" id="loading-overlay">
-        <div class="loading-spinner"></div>
-    </div>
-
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function () {
