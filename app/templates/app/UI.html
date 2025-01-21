@@ -259,7 +259,6 @@
                 <!-- Conversations will be dynamically loaded here -->
             </div>
         </aside>
-
         <!-- Chat Section -->
         <section class="chat-section">
             <div class="chat-header">
@@ -275,7 +274,11 @@
                 <textarea id="user-input" rows="2" placeholder="Write your message here..."></textarea>
                 <button type="submit" class="send-button">Send</button>
             </form>
-        </section>
+            <form class="chat-input" id="similarity-form" style="margin-top: 10px;">
+                <textarea id="similarity-input" rows="2" placeholder="Enter text for similarity search..."></textarea>
+                <button type="submit" class="send-button">Search</button>
+            </form>
+        </section>        
         <!-- Right Sidebar -->
         <aside class="right-sidebar">
             <button class="upload-button" id="upload-button">Upload Your Document</button>
@@ -286,7 +289,7 @@
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function () {
     const conversationList = document.getElementById("conversation-list");
     const conversationHistory = document.getElementById("conversation-history");
     const chatForm = document.getElementById("chat-form");
@@ -456,7 +459,61 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+document.getElementById("similarity-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const inputText = document.getElementById("similarity-input").value.trim();
 
+    if (!inputText) {
+        alert("Please enter text for similarity search.");
+        return;
+    }
+
+    try {
+        // Send the request to the similarity search API
+        const response = await axios.post("/api/similarity-search/", {
+            input_text: inputText,
+        });
+
+        const result = response.data;
+        const { most_similar, corresponding_document } = result;
+
+        // Escape special characters for safe rendering
+        const escapeHTML = (text) => {
+            return text
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        };
+
+        // Append the results dynamically to the conversation history
+        const conversationHistory = document.getElementById("conversation-history");
+        conversationHistory.innerHTML += `
+            <div class="message user">Similarity Search: ${escapeHTML(inputText)}</div>
+            <div class="message ai">
+                <strong>Most Similar:</strong>
+                <div style="max-height: 150px; overflow-y: auto; border: 1px solid #ccc; padding: 5px;">
+                    ${escapeHTML(most_similar)}
+                </div>
+                <strong>Corresponding Document:</strong>
+                <a href="${escapeHTML(corresponding_document)}" target="_blank">${escapeHTML(corresponding_document)}</a>
+            </div>
+        `;
+
+        // Clear the input field
+        document.getElementById("similarity-input").value = "";
+    } catch (error) {
+        console.error("Error performing similarity search:", error);
+
+        // Display an error message in the UI
+        conversationHistory.innerHTML += `
+            <div class="message ai" style="color: red;">
+                <strong>Error:</strong> Failed to perform similarity search. Please try again.
+            </div>
+        `;
+    }
+});
 // Add CSRF token to headers for POST requests
 const csrfToken = getCookie('csrftoken');
 axios.defaults.headers.common['X-CSRFToken'] = csrfToken;

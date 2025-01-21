@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from app.serializers import TopicSerializer, ConversationSerializer, DocumentSerializer
 from rest_framework.parsers import MultiPartParser, FormParser
+import logging
 
 
 load_dotenv()
@@ -161,33 +162,41 @@ class FetchDocumentsView(APIView):
         return Response(data, status=status.HTTP_200_OK)
 
 
-def similarity_search(request):
-    context = {}
-    if request.method == "POST":
-        input_text = request.POST.get("input_text")
-        if input_text:
-            try:
-                text_chunks = chunk_text(input_text)
-                embeddings = [embed_text(chunk) for chunk in text_chunks]
+class SimilaritySearchView(APIView):
+    def post(self, request, *args, **kwargs):
+        input_text = request.data.get("input_text")
+        if not input_text:
+            return Response(
+                {"error": "Input text is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        try:
+            logging.info(f"Received input text: {input_text}")  # Log input text
 
-                # Find the most similar chunk for the first embedding
-                similar_chunk = None
-                corresponding_document = None
-                if embeddings:
-                    embedding = embeddings[0]
-                    similar_chunk = TextChunk.objects.order_by(
-                        CosineDistance('embedding', embedding)).first()
-                    
-                    if similar_chunk:
-                        corresponding_document = similar_chunk.document
-                
-                context = {
-                    'input_text': input_text,
-                    'text_chunks': text_chunks,
-                    'most_similar': similar_chunk.chunk if similar_chunk else "No similar chunk found.",
-                    'corresponding_document': corresponding_document.file.name if corresponding_document else "No corresponding document found.",
-                }
-            except Exception as e:
-                context = {'error': str(e)}
+            # Chunk the input text
+            text_chunks = chunk_text(input_text)
+            logging.info(f"Generated text chunks: {text_chunks}")  # Log text chunks
 
-    return render(request, 'app/index.html', context)
+            # Generate embeddings
+            embeddings = [embed_text(chunk) for chunk in text_chunks]
+            logging.info(f"Generated embeddings: {embeddings}")  # Log embeddings
+
+            # Fetch the most similar chunk
+            embedding = embeddings[0]
+            similar_chunk = TextChunk.objects.order_by(
+                CosineDistance('embedding', embedding)
+            ).first()
+            corresponding_document = similar_chunk.document if similar_chunk else None
+
+            response_data = {
+                "most_similar": similar_chunk.chunk if similar_chunk else "No similar chunk found.",
+                "corresponding_document": corresponding_document.file.name if corresponding_document else "No corresponding document found.",
+            }
+            return Response(response_data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logging.error(f"Error in similarity search: {str(e)}")
+            return Response(
+                {"error": f"Internal server error: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

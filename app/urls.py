@@ -7,6 +7,7 @@ from app.views import (
     DocumentUploadView,
     render_ui,
     FetchDocumentsView,
+    SimilaritySearchView
 )
 
 
@@ -19,5 +20,7 @@ urlpatterns = [
     path('api/generate-response/<int:id>/', GenerateResponseView.as_view(), name='api_generate_response_with_id'),
     path('api/upload-document/', DocumentUploadView.as_view(), name='api_upload_document'),
     path('api/fetch-documents/', FetchDocumentsView.as_view(), name='api_fetch_documents'),
+    path('api/similarity-search/', SimilaritySearchView.as_view(), name='similarity-search'),
+
 
 ]
