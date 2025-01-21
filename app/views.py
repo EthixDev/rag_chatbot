@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from RAG.embedding_gen import embed_text
+from RAG.read_chunking import chunk_text
 from app.models import Document, Conversation, TextChunk, Topic
 from pgvector.django import CosineDistance
 from dotenv import load_dotenv
@@ -158,3 +159,35 @@ class FetchDocumentsView(APIView):
         documents = Document.objects.all()
         data = [{"file": doc.file.name, "title": doc.title} for doc in documents]
         return Response(data, status=status.HTTP_200_OK)
+
+
+def similarity_search(request):
+    context = {}
+    if request.method == "POST":
+        input_text = request.POST.get("input_text")
+        if input_text:
+            try:
+                text_chunks = chunk_text(input_text)
+                embeddings = [embed_text(chunk) for chunk in text_chunks]
+
+                # Find the most similar chunk for the first embedding
+                similar_chunk = None
+                corresponding_document = None
+                if embeddings:
+                    embedding = embeddings[0]
+                    similar_chunk = TextChunk.objects.order_by(
+                        CosineDistance('embedding', embedding)).first()
+                    
+                    if similar_chunk:
+                        corresponding_document = similar_chunk.document
+                
+                context = {
+                    'input_text': input_text,
+                    'text_chunks': text_chunks,
+                    'most_similar': similar_chunk.chunk if similar_chunk else "No similar chunk found.",
+                    'corresponding_document': corresponding_document.file.name if corresponding_document else "No corresponding document found.",
+                }
+            except Exception as e:
+                context = {'error': str(e)}
+
+    return render(request, 'app/index.html', context)
