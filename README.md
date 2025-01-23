@@ -24,7 +24,7 @@ When the user asks a question, the model will give a response based on the quest
 
 ## Here’s a quick demo:
 
-[![APP Demo](https://img.youtube.com/vi/jWK2ZX2foAs/0.jpg)](https://youtu.be/jWK2ZX2foAs)
+[Watch the APP Demo on YouTube](https://youtu.be/jWK2ZX2foAs)
 
 ## How it Works
 
