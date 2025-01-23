@@ -12,8 +12,6 @@ This RAG-chatbot is a powerful Django application build using Google Gemini API 
 
 - **Chat History:** You can explore your previous chats in the Topics section, every chat will be stored which can be accessed anytime so that you can able to resume your chat. You can also delete your chat history.
 
-- **Finding Text Chunk:** The app incorporates another feature that will let you search similar text chunks based on your question. You can ask the app any question on the documents and will find you the most similar text chunk related to the input questions.
-
 ## RAG - ChatBot Interface
 
 The very first time the user launches the app, this will be the screen of the app.
