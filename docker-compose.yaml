@@ -27,6 +27,7 @@ services:
       - POSTGRES_DB=${DATABASE_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data  # Persists PostgreSQL data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # Initialize pgvector extension
 
 volumes:
   postgres_data:
