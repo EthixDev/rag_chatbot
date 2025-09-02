@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   web:
     build:
@@ -8,8 +6,6 @@ services:
     image: web_image
     ports:
       - "8080:8080"  # Exposes port 8080 of the container to 9000 on the host
-    volumes:
-      - .:/app  # Mounts the current directory to /app in the container
     env_file: 
       - .env  # Loads environment variables from the .env file
     depends_on:
