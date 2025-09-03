@@ -12,11 +12,6 @@ COPY . /app
 # Collect static files
 RUN python manage.py collectstatic --noinput
 
-# Set environment variables
-ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PORT=8080
-
 EXPOSE 8080
 
 # Start the application: Serve static files on port 8001 and the app on port 8080
